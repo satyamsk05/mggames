@@ -1,0 +1,10 @@
+<svg id="Bank" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Lid (opacity 1.0) -->
+  <rect x="1" y="2" width="22" height="4.5" rx="2" fill="#000000" />
+  <!-- Body (opacity 0.4) with cutout slot -->
+  <mask id="body-mask">
+    <rect x="2.5" y="8" width="19" height="14" rx="3.5" fill="#FFFFFF" />
+    <rect x="9" y="12" width="6" height="2.5" rx="1.25" fill="#000000" />
+  </mask>
+  <rect opacity="0.4" x="2.5" y="8" width="19" height="14" rx="3.5" fill="#000000" mask="url(#body-mask)" />
+</svg>
