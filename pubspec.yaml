@@ -46,7 +46,7 @@ dev_dependencies:
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "apklogo.png"
+  image_path: "assets/images/apklogo.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -63,7 +63,11 @@ flutter:
   assets:
     - assets/
     - assets/images/
-    - assets/mines_game/
+    - assets/dashboard/
+    - assets/games/mines/
+    - assets/games/Crush/
+    - assets/games/Aviator/
+    - assets/mine/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

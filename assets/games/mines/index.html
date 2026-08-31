@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>Mines Pro - BC.Game</title>
+  <!-- Google Fonts: Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="game-container">
+  <!-- Particles Canvas Overlay -->
+  <div id="particles-container"></div>
+
+  <!-- HEADER -->
+  <header>
+    <div class="brand">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 2L2 22h20L12 2zm0 4l6.5 13H5.5L12 6z"/>
+      </svg>
+      <span class="brand-title">MINES PRO</span>
+    </div>
+    
+    <div class="header-actions">
+      <!-- Wallet -->
+      <div class="wallet-box">
+        <span class="wallet-icon">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M12.136.326A1.5 1.5 0 0 1 14 1.78V3h.5A1.5 1.5 0 0 1 16 4.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 13.5v-9A1.5 1.5 0 0 1 1.5 3H2V1.78a1.5 1.5 0 0 1 1.864-1.454L12.136.326zM3 3h9V1.78a.5.5 0 0 0-.62-.485L3.62 2.295A.5.5 0 0 0 3 2.78V3zm11.5 1h-13a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5z"/>
+          </svg>
+        </span>
+        <span class="wallet-balance" id="headerBalance">₹150.57</span>
+      </div>
+
+      <!-- Mute Toggle -->
+      <button class="action-btn" id="btnMute" title="Toggle Sound">
+        <svg width="18" height="18" fill="currentColor" id="speakerIcon" viewBox="0 0 16 16">
+          <path d="M11.536 14.01A8.47 8.47 0 0 0 14.02 10a8.47 8.47 0 0 0-2.484-4.01L10.5 7.028A6.5 6.5 0 0 1 12 10a6.5 6.5 0 0 1-1.5 2.972l1.036 1.038z"/>
+          <path d="M9.774 11.225A1 1 0 0 1 10 10a1 1 0 0 1-.226-.775l1.03-1.03A2.5 2.5 0 0 1 12 10a2.5 2.5 0 0 1-.422 1.455l-1.03-1.03z"/>
+          <path d="M10.025 8a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h.586l3.293 3.293c.63.63 1.707.184 1.707-.707V3.414c0-.89-1.077-1.337-1.707-.707L10.61 6H10.025z"/>
+        </svg>
+      </button>
+
+      <!-- Back btn -->
+      <button class="action-btn" id="btnBack" title="Exit Game">
+        <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+          <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- MULTIPLIERS ROAD -->
+  <section class="multipliers-container">
+    <div class="multipliers-wrapper" id="multipliersWrapper">
+      <!-- Generated dynamically -->
+    </div>
+  </section>
+
+  <!-- BOARD -->
+  <section class="boardWrap">
+    <div class="board" id="board">
+      <!-- Generated dynamically -->
+    </div>
+  </section>
+
+  <!-- CONTROLS PANEL -->
+  <section class="controls-panel">
+    <!-- Manual/Auto tabs -->
+    <div class="tabs-bar">
+      <button class="tab-btn active" id="tabManual">Manual</button>
+      <button class="tab-btn" id="tabAuto">Auto</button>
+    </div>
+
+    <!-- Bet Amount -->
+    <div class="field-group">
+      <div class="field-header">
+        <span>Bet Amount</span>
+        <span style="color: var(--color-green);">Min: ₹0.01</span>
+      </div>
+      <div class="field-input-row">
+        <div class="amount-input-container">
+          <span class="currency-symbol">₹</span>
+          <input class="amount-input" type="number" id="betInput" value="10.00" step="1" min="0.01">
+        </div>
+        <button class="adjust-btn" id="btnHalf">½</button>
+        <button class="adjust-btn" id="btnDouble">2×</button>
+      </div>
+    </div>
+
+    <!-- Mines Select -->
+    <div class="field-group">
+      <div class="field-header">
+        <span>Mines Count</span>
+        <span id="minesDisplay">3 Mines</span>
+      </div>
+      <div class="slider-container">
+        <span>1</span>
+        <input type="range" id="minesSelect" min="1" max="24" value="3">
+        <span>24</span>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-row">
+      <button class="btn-main btn-secondary" id="btnRandom">Random Pick</button>
+      <button class="btn-main btn-bet" id="btnBet">Start Bet</button>
+    </div>
+
+    <!-- Status Text -->
+    <div class="status-text" id="statusText">Set bet amount and click Start Bet</div>
+
+    <!-- Session Stats -->
+    <div class="stats-row">
+      <div class="stat-item">
+        <span class="stat-label">Profit</span>
+        <span class="stat-value" id="statProfit">₹0.00</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Wins</span>
+        <span class="stat-value win" id="statWins">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Losses</span>
+        <span class="stat-value" id="statLosses" style="color: var(--color-red);">0</span>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

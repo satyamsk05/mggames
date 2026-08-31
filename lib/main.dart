@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'webview_helper/webview_helper_stub.dart'
@@ -172,86 +173,124 @@ class _BcGameDashboardState extends State<BcGameDashboard> {
   String _searchQuery = '';
   double _balance = 150.57;
 
+  int _currentPromoPage = 0;
+  late final PageController _promoPageController;
+  Timer? _promoTimer;
+
+  final List<Map<String, String>> _promoCards = [
+    {
+      'badge': 'DEPOSIT',
+      'title': 'DEPOSIT BONUS\n180% BONUS',
+      'subtitle': 'DEPOSIT -> GET BONUS',
+      'image': 'assets/dashboard/banner.png',
+      'buttonText': 'DEPOSIT NOW',
+      'showCheck': 'true',
+    },
+    {
+      'badge': 'EXCLUSIVE',
+      'title': 'FREE SPINS\nGIVEAWAY',
+      'subtitle': 'BET €10 · GET 20\nFREE SPINS',
+      'image': 'assets/dashboard/promo_free_spins.png',
+    },
+    {
+      'badge': 'NEW',
+      'title': 'AFTERMATH',
+      'subtitle': 'EXCLUSIVE NEW RELEASE',
+      'image': 'assets/dashboard/promo_aftermath.png',
+    },
+    {
+      'badge': 'NEW',
+      'title': 'OOPS! ALL\nBURGER',
+      'subtitle': 'EXCLUSIVE NEW RELEASE',
+      'image': 'assets/dashboard/promo_all_burger.png',
+    },
+    {
+      'badge': 'NEW',
+      'title': 'PLAYNGO',
+      'subtitle': 'NEW PROVIDER RELEASE',
+      'image': 'assets/dashboard/promo_playngo.png',
+    },
+    {
+      'badge': 'NEW',
+      'title': 'TOOTHROT\nTILLY',
+      'subtitle': 'EXCLUSIVE EARLY RELEASE',
+      'image': 'assets/dashboard/promo_toothrot_tilly.png',
+    },
+  ];
+
   final List<String> _allGames = [
-    'assets/images/01223589dc.png',
-    'assets/images/0162b49865.png',
-    'assets/images/288c627ac1.png',
-    'assets/images/29d00e7a90.png',
-    'assets/images/329847a6f1.png',
-    'assets/images/33028991a5.png',
-    'assets/images/35494eaa73.png',
-    'assets/images/386dfafa24.png',
-    'assets/images/3eb0992b2a.png',
-    'assets/images/45d7b65e3b.png',
-    'assets/images/4742cdf02e.png',
-    'assets/images/4fc9f23427.png',
-    'assets/images/5b6ef114f7.png',
-    'assets/images/5d92e5b3fd.png',
-    'assets/images/62d1118d59.png',
-    'assets/images/67c3050209.png',
-    'assets/images/6b95d47b98.png',
-    'assets/images/7b00f807a6.png',
-    'assets/images/804c78ad8e.png',
-    'assets/images/82a8663c56.png',
-    'assets/images/84ab11ed13.png',
-    'assets/images/9d936aa67f.png',
-    'assets/images/9dcbe909af.png',
-    'assets/images/a08f537c90.png',
-    'assets/images/a7dbc84cd4.png',
-    'assets/images/ab5aef9177.png',
-    'assets/images/abdf431e5b.png',
-    'assets/images/acf7dad0dd.png',
-    'assets/images/afadedf2e7.png',
-    'assets/images/b5d25ed060.png',
-    'assets/images/bde5e535a6.png',
-    'assets/images/d9e8949bfe.png',
-    'assets/images/dc463b0700.png',
-    'assets/images/dc87252476.png',
-    'assets/images/e13bba65c8.png',
-    'assets/images/e73e8dc041.png',
-    'assets/images/eadf095a9d.png',
-    'assets/images/f0448b14ec.png',
-    'assets/images/fa21392a55.png',
-    'assets/images/fdbeb3e366.png',
+    'assets/images/DOUBLE.png',
+    'assets/images/MINES.png',
+    'assets/images/CRASH_OLD.png',
+    'assets/images/CRASH.png',
+    'assets/images/PLINKO.png',
+    'assets/images/KENO.png',
+    'assets/images/HILO.png',
+    'assets/images/COINFLIP.png',
+    'assets/images/DIAMONDS.png',
+    'assets/images/BLACKJACK.png',
+    'assets/images/ROULETTE.png',
+    'assets/images/SLOTS.png',
+    'assets/images/GAME_5B6E.png',
+    'assets/images/GAME_5D92.png',
+    'assets/images/GAME_62D1.png',
+    'assets/images/GAME_67C3.png',
+    'assets/images/GAME_6B95.png',
+    'assets/images/GAME_7B00.png',
+    'assets/images/GAME_804C.png',
+    'assets/images/GAME_82A8.png',
+    'assets/images/WHEEL.png',
+    'assets/images/SICBO.png',
+    'assets/images/GAME_9DCB.png',
+    'assets/images/GAME_A08F.png',
+    'assets/images/GAME_A7DB.png',
+    'assets/images/GAME_AB5A.png',
+    'assets/images/GAME_ABDF.png',
+    'assets/images/GAME_ACF7.png',
+    'assets/images/GAME_AFAD.png',
+    'assets/images/GAME_B5D2.png',
+    'assets/images/GAME_BDE5.png',
+    'assets/images/GAME_D9E8.png',
+    'assets/images/GAME_DC46.png',
+    'assets/images/GAME_DC87.png',
+    'assets/images/GAME_E13B.png',
+    'assets/images/GAME_E73E.png',
+    'assets/images/FAST_PARITY.png',
+    'assets/images/GAME_F044.png',
+    'assets/images/TOWER_LEGEND.png',
+    'assets/images/GAME_FDBE.png',
   ];
 
   @override
   void initState() {
     super.initState();
     _searchController = TextEditingController();
+    _promoPageController = PageController();
+    _promoTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
+      if (_promoPageController.hasClients) {
+        final nextPage = (_currentPromoPage + 1) % _promoCards.length;
+        _promoPageController.animateToPage(
+          nextPage,
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _promoPageController.dispose();
+    _promoTimer?.cancel();
     super.dispose();
   }
 
   String _getGameTitle(String path) {
     final filename = path.split('/').last.replaceAll('.png', '');
-    switch (filename) {
-      case '01223589dc': return 'DOUBLE';
-      case '329847a6f1': return 'PLINKO';
-      case '84ab11ed13': return 'WHEEL';
-      case 'fa21392a55': return 'TOWER LEGEND';
-      case '9d936aa67f': return 'SICBO';
-      case 'eadf095a9d': return 'FAST PARITY';
-      case '0162b49865': return 'MINES';
-      case '288c627ac1': return 'CRASH';
-      case '29d00e7a90': return 'LIMBO';
-      case '33028991a5': return 'KENO';
-      case '35494eaa73': return 'HILO';
-      case '386dfafa24': return 'COINFLIP';
-      case '3eb0992b2a': return 'DIAMONDS';
-      case '45d7b65e3b': return 'BLACKJACK';
-      case '4742cdf02e': return 'ROULETTE';
-      case '4fc9f23427': return 'SLOTS';
-      default:
-        if (filename.length >= 4) {
-          return 'GAME ${filename.substring(0, 4).toUpperCase()}';
-        }
-        return 'GAME';
-    }
+    if (filename == 'CRASH_OLD') return 'CRASH';
+    if (filename == 'FAST_PARITY') return 'AVIATOR';
+    return filename.replaceAll('_', ' ').toUpperCase();
   }
 
   Widget _buildHomeTab() {
@@ -300,7 +339,7 @@ class _BcGameDashboardState extends State<BcGameDashboard> {
           // 1. Secure Bank Card
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(20.0),
+            padding: const EdgeInsets.all(25.0),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [Color(0xFF1E2024), Color(0xFF2D3037)],
@@ -375,7 +414,12 @@ class _BcGameDashboardState extends State<BcGameDashboard> {
                       child: SizedBox(
                         height: 40,
                         child: OutlinedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const WithdrawScreen()),
+                            );
+                          },
                           style: OutlinedButton.styleFrom(
                             side: const BorderSide(color: Color(0xFF4A4E5A), width: 1.5),
                             shape: RoundedRectangleBorder(
@@ -658,6 +702,32 @@ class _BcGameDashboardState extends State<BcGameDashboard> {
                                 ),
                               ),
                             );
+                          } else if (title == 'CRASH') {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => CrashGameScreen(
+                                  currentBalance: _balance,
+                                  onBalanceUpdated: (newBal) {
+                                    setState(() {
+                                      _balance = newBal;
+                                    });
+                                  },
+                                ),
+                              ),
+                            );
+                          } else if (title == 'AVIATOR') {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => AviatorGameScreen(
+                                  currentBalance: _balance,
+                                  onBalanceUpdated: (newBal) {
+                                    setState(() {
+                                      _balance = newBal;
+                                    });
+                                  },
+                                ),
+                              ),
+                            );
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
@@ -724,6 +794,7 @@ class _BcGameDashboardState extends State<BcGameDashboard> {
       {'title': 'KYC Verification', 'subtitle': 'Verified successfully', 'icon': Icons.verified_user, 'badge': 'VERIFIED'},
       {'title': 'Refer & Earn', 'subtitle': 'Invite friends, earn passive income', 'icon': Icons.people},
       {'title': 'VIP Center', 'subtitle': 'Level 2 privileges', 'icon': Icons.emoji_events},
+      {'title': 'Bet History', 'subtitle': 'Detailed log of your bets', 'icon': Icons.history},
       {'title': 'Customer Support', 'subtitle': '24/7 Live chat assistant', 'icon': Icons.headset_mic},
     ];
 
@@ -743,7 +814,7 @@ class _BcGameDashboardState extends State<BcGameDashboard> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(40),
                   child: Image.asset(
-                    'assets/33986f0f-8ac0-4fd9-b635-fc96293801b2.png',
+                    'assets/dashboard/avatar.png',
                     height: 64,
                     width: 64,
                     fit: BoxFit.cover,
@@ -897,7 +968,14 @@ class _BcGameDashboardState extends State<BcGameDashboard> {
                           ),
                         )
                       : const Icon(Icons.chevron_right, color: Color(0xFF8A8F95), size: 20),
-                  onTap: () {},
+                  onTap: () {
+                    if (item['title'] == 'Bet History') {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const BetHistoryScreen()),
+                      );
+                    }
+                  },
                 ),
               );
             },
@@ -977,288 +1055,162 @@ class _BcGameDashboardState extends State<BcGameDashboard> {
   }
 
   Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
-      child: Row(
-        children: [
-          // BC.Game Logo (blob.png) (Smaller size to show white padding around it)
-          Image.asset(
-            'assets/blob.png',
-            height: 28,
-            fit: BoxFit.contain,
-          ),
-          const SizedBox(width: 8),
-          // Currency Selector container (rectangle-8f978b99c3ab)
-          Expanded(
-            child: Container(
-              height: 38,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFFE5E9EC), width: 1.5),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.03),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  const SizedBox(width: 6),
-                  // Orange Rupee icon (INR.rect.png) (Centered and smaller to show the white layer behind it)
-                  Image.asset(
-                    'assets/INR.rect.png',
-                    height: 20,
-                    width: 20,
-                    fit: BoxFit.contain,
-                  ),
-                  const SizedBox(width: 5),
-                  // Balance Text
-                  Text(
-                    '₹ ${_balance.toStringAsFixed(2)}',
-                    style: GoogleFonts.sourceSans3(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const Spacer(),
-                  // Green Plus button (+) clickable with bounce/press animation
-                  Bounceable(
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Plus button clicked'),
-                          duration: Duration(seconds: 1),
-                        ),
-                      );
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 4.0, top: 3.0, bottom: 3.0),
-                      child: Container(
-                        width: 30,
-                        height: 30,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF2CD97E),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Icon(
-                          Icons.add,
-                          color: Colors.black,
-                          size: 18,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          // Gift icon inside white square container (rectangle-8f990320e8ce) with bounce/press animation
-          Bounceable(
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Gift button clicked'),
-                  duration: Duration(seconds: 1),
-                ),
-              );
-            },
-            child: Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFFE5E9EC), width: 1.5),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.03),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              alignment: Alignment.center,
-              child: Image.asset('assets/svg-104.png', height: 24, width: 24),
-            ),
-          ),
-          const SizedBox(width: 8),
-          // Notification bell inside white square container (rectangle-8f99428e8ae4) with bounce/press animation
-          Bounceable(
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Notification button clicked'),
-                  duration: Duration(seconds: 1),
-                ),
-              );
-            },
-            child: Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFFE5E9EC), width: 1.5),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.03),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              alignment: Alignment.center,
-              child: Image.asset('assets/svg-106.png', height: 24, width: 24),
-            ),
-          ),
-          const SizedBox(width: 8),
-          // Circular Profile Avatar (33986f0f-8ac0-4fd9-b635-fc96293801b2.png)
-          ClipRRect(
-            borderRadius: BorderRadius.circular(18),
-            child: Image.asset(
-              'assets/33986f0f-8ac0-4fd9-b635-fc96293801b2.png',
-              height: 36,
-              width: 36,
-              fit: BoxFit.cover,
-            ),
-          ),
-        ],
-      ),
+    return BcGameHeader(
+      balance: _balance,
     );
   }
 
   Widget _buildPromoBanner() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+    return SizedBox(
       height: 170,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Stack(
-        children: [
-          // 1. Vertical separator line in the middle
-          Positioned(
-            right: 180,
-            top: 15,
-            bottom: 15,
-            width: 1.2,
-            child: Container(
-              color: const Color(0xFFE5E9EC),
-            ),
-          ),
-
-          // 2. Right green wallet card illustration (floating with padding so the white card background is visible behind it)
-          Positioned(
-            right: 12,
-            top: 10,
-            bottom: 10,
-            width: 160,
-            child: Image.asset(
-              'assets/bc-game-crypto-casino-games-casino-slot-games-crypto-gambling.image.monthly-CA-fqQod.Woblo.png',
-              fit: BoxFit.contain,
-            ),
-          ),
-
-          // 3. Left Column for text content and button (constrained to the left of the divider)
-          Positioned(
-            left: 16,
-            top: 0,
-            bottom: 0,
-            right: 195, // Guarantees spacing from the divider and image
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // DEPOSIT Badge (rectangle-8fb615257d24)
-                Container(
-                  width: 58,
-                  height: 20, // Sized matching Penpot and increased 20%
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE5E9EC),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    'DEPOSIT',
-                    style: GoogleFonts.sourceSans3(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.black,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 6),
-                // Banner Title
-                Text(
-                  'DEPOSIT BONUS',
-                  style: GoogleFonts.sourceSans3(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.black,
-                    height: 1.15,
-                  ),
-                ),
-                Text(
-                  '180% BONUS',
-                  style: GoogleFonts.sourceSans3(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.black,
-                    height: 1.15,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                // Banner Subtitle
-                Text(
-                  'DEPOSIT -> GET BONUS',
-                  style: GoogleFonts.sourceSans3(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF595F67),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                // DEPOSIT NOW Button (rectangle-8fb59616114d)
-                SizedBox(
-                  width: 114,
-                  height: 28, // Sized matching Penpot (87px raw -> 32px scaled)
-                  child: OutlinedButton(
-                    onPressed: () {},
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Color(0xFFE7EEEF), width: 1.5),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      padding: EdgeInsets.zero,
-                      backgroundColor: Colors.white,
-                    ),
-                    child: Text(
-                      'DEPOSIT NOW',
-                      style: GoogleFonts.sourceSans3(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ),
+      child: PageView.builder(
+        controller: _promoPageController,
+        onPageChanged: (index) {
+          setState(() {
+            _currentPromoPage = index;
+          });
+        },
+        itemCount: _promoCards.length,
+        itemBuilder: (context, index) {
+          final card = _promoCards[index];
+          return Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFE5E9EC), width: 1.2),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
-          ),
-        ],
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Stack(
+                children: [
+                  // 1. Right side character artwork
+                  Positioned(
+                    right: 12,
+                    top: 10,
+                    bottom: 10,
+                    width: 155,
+                    child: Image.asset(
+                      card['image']!,
+                      fit: BoxFit.contain,
+                      alignment: Alignment.centerRight,
+                    ),
+                  ),
+                  // 2. Optional "Check >" overlay badge
+                  if (card['showCheck'] == 'true')
+                    Positioned(
+                      right: 20,
+                      bottom: 12,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF133622).withValues(alpha: 0.75), // Translucent dark green
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.25), width: 1.0),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Check',
+                              style: GoogleFonts.sourceSans3(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(width: 2),
+                            const Icon(
+                              Icons.chevron_right,
+                              color: Colors.white,
+                              size: 12,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  // 3. Left side text metadata & button
+                  Positioned(
+                    left: 16,
+                    top: 12,
+                    bottom: 12,
+                    right: 175,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Badge
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE5E9EC),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            card['badge']!,
+                            style: GoogleFonts.sourceSans3(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        // Title
+                        Text(
+                          card['title']!,
+                          style: GoogleFonts.sourceSans3(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.black,
+                            height: 1.1,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        // Subtitle
+                        Text(
+                          card['subtitle']!,
+                          style: GoogleFonts.sourceSans3(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF595F67),
+                            height: 1.1,
+                          ),
+                        ),
+                        const Spacer(),
+                        // Dynamic Button
+                        Container(
+                          height: 28,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: const Color(0xFFE5E9EC), width: 1.5),
+                          ),
+                          child: Text(
+                            card['buttonText'] ?? 'PLAY NOW',
+                            style: GoogleFonts.sourceSans3(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                              color: const Color(0xFF595F67),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -1266,28 +1218,19 @@ class _BcGameDashboardState extends State<BcGameDashboard> {
   Widget _buildPageIndicators() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        // Active dot
-        Container(
-          width: 16,
+      children: List.generate(_promoCards.length, (index) {
+        final bool isActive = _currentPromoPage == index;
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          width: isActive ? 16 : 6,
           height: 6,
+          margin: const EdgeInsets.symmetric(horizontal: 3),
           decoration: BoxDecoration(
-            color: const Color(0xFF2CD97E),
+            color: isActive ? const Color(0xFF2CD97E) : const Color(0xFFE5E9EC),
             borderRadius: BorderRadius.circular(3),
           ),
-        ),
-        const SizedBox(width: 4),
-        // Inactive dots
-        ...List.generate(7, (index) => Container(
-          width: 6,
-          height: 6,
-          margin: const EdgeInsets.symmetric(horizontal: 2),
-          decoration: const BoxDecoration(
-            color: Color(0xFFE5E9EC),
-            shape: BoxShape.circle,
-          ),
-        )),
-      ],
+        );
+      }),
     );
   }
 
@@ -1359,12 +1302,12 @@ class _BcGameDashboardState extends State<BcGameDashboard> {
 
   Widget _buildGamesGrid() {
     final List<String> gameAssets = [
-      'assets/01223589dc.png', // DOUBLE
-      'assets/329847a6f1.png', // PLINKO
-      'assets/84ab11ed13.png', // WHEEL
-      'assets/fa21392a55.png', // TOWER LEGEND
-      'assets/9d936aa67f.png', // SICBO
-      'assets/eadf095a9d.png', // FAST PARITY
+      'assets/images/DOUBLE.png', // DOUBLE
+      'assets/images/PLINKO.png', // PLINKO
+      'assets/images/WHEEL.png', // WHEEL
+      'assets/images/TOWER_LEGEND.png', // TOWER LEGEND
+      'assets/images/SICBO.png', // SICBO
+      'assets/images/FAST_PARITY.png', // FAST PARITY
     ];
 
     return Padding(
@@ -1381,7 +1324,56 @@ class _BcGameDashboardState extends State<BcGameDashboard> {
         itemCount: gameAssets.length,
         itemBuilder: (context, index) {
           return GestureDetector(
-            onTap: () {},
+            onTap: () {
+              final String title = _getGameTitle(gameAssets[index]);
+              if (title == 'MINES') {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => MinesGameScreen(
+                      currentBalance: _balance,
+                      onBalanceUpdated: (newBal) {
+                        setState(() {
+                          _balance = newBal;
+                        });
+                      },
+                    ),
+                  ),
+                );
+              } else if (title == 'CRASH') {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => CrashGameScreen(
+                      currentBalance: _balance,
+                      onBalanceUpdated: (newBal) {
+                        setState(() {
+                          _balance = newBal;
+                        });
+                      },
+                    ),
+                  ),
+                );
+              } else if (title == 'AVIATOR') {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => AviatorGameScreen(
+                      currentBalance: _balance,
+                      onBalanceUpdated: (newBal) {
+                        setState(() {
+                          _balance = newBal;
+                        });
+                      },
+                    ),
+                  ),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Starting $title...'),
+                    duration: const Duration(seconds: 1),
+                  ),
+                );
+              }
+            },
             child: Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(15),
@@ -1396,7 +1388,7 @@ class _BcGameDashboardState extends State<BcGameDashboard> {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(15),
                 child: Image.asset(
-                  gameAssets[index],
+                   gameAssets[index],
                   fit: BoxFit.cover,
                 ),
               ),
@@ -1410,23 +1402,23 @@ class _BcGameDashboardState extends State<BcGameDashboard> {
   Widget _buildCategoriesRow() {
     final List<Map<String, String>> categories = [
       {
-        'image': 'assets/image.png',
+        'image': 'assets/dashboard/poker.png',
         'label': 'POKER',
       },
       {
-        'image': 'assets/bc-game-crypto-casino-games-casino-slot-games-crypto-gambling.image.racing-DSbD1WV7.Woblo.png',
+        'image': 'assets/dashboard/racing.png',
         'label': 'RACING',
       },
       {
-        'image': 'assets/bc-game-crypto-casino-games-casino-slot-games-crypto-gambling.image.lottery-4fGTpStn.Woblo.png',
+        'image': 'assets/dashboard/lottery.png',
         'label': 'LOTTERY',
       },
       {
-        'image': 'assets/bc-game-crypto-casino-games-casino-slot-games-crypto-gambling.image.updown-Cwd-AILh.Woblo.png',
+        'image': 'assets/dashboard/updown.png',
         'label': 'UPDOWN',
       },
       {
-        'image': 'assets/bc-game-crypto-casino-games-casino-slot-games-crypto-gambling.image.bingo-6_9NYc-6.Woblo.png',
+        'image': 'assets/dashboard/bingo.png',
         'label': 'BINGO',
       },
     ];
@@ -1445,8 +1437,8 @@ class _BcGameDashboardState extends State<BcGameDashboard> {
           return Expanded(
             child: Container(
               margin: EdgeInsets.only(left: leftMargin, right: rightMargin),
-              // Height increased by 20% to 104 (from 86)
-              height: 104,
+              // Height increased to 114 to accommodate larger layout
+              height: 114,
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(8),
@@ -1461,19 +1453,19 @@ class _BcGameDashboardState extends State<BcGameDashboard> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  // 3D Category Image (Scaled proportionally to height)
+                  // 3D Category Image (Scaled up by 15%)
                   Image.asset(
                     cat['image']!,
-                    height: 56,
-                    width: 56,
+                    height: 64,
+                    width: 64,
                     fit: BoxFit.contain,
                   ),
-                  // Category label
+                  // Category label (Scaled up by 15%)
                   Text(
                     cat['label']!,
                     style: GoogleFonts.sourceSans3(
                       fontWeight: FontWeight.w700,
-                      fontSize: 9,
+                      fontSize: 10.5,
                       color: Colors.black,
                     ),
                   ),
@@ -2005,28 +1997,1107 @@ class _MinesGameScreenState extends State<MinesGameScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1E2024),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1E2024),
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.of(context).pop(),
+      backgroundColor: const Color(0xFF313738),
+      body: SafeArea(
+        child: buildMinesWebView(
+          context,
+          widget.currentBalance,
+          widget.onBalanceUpdated,
         ),
-        title: Text(
-          'MINES GAME',
+      ),
+    );
+  }
+}
+
+// -----------------------------------------------------------------------------
+// CRASH GAME SCREEN (HTML5 Webview Integration)
+// -----------------------------------------------------------------------------
+class CrashGameScreen extends StatefulWidget {
+  final double currentBalance;
+  final ValueChanged<double> onBalanceUpdated;
+
+  const CrashGameScreen({
+    super.key,
+    required this.currentBalance,
+    required this.onBalanceUpdated,
+  });
+
+  @override
+  State<CrashGameScreen> createState() => _CrashGameScreenState();
+}
+
+class _CrashGameScreenState extends State<CrashGameScreen> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF1E2024),
+      body: SafeArea(
+        child: buildCrashWebView(
+          context,
+          widget.currentBalance,
+          widget.onBalanceUpdated,
+        ),
+      ),
+    );
+  }
+}
+
+// -----------------------------------------------------------------------------
+// AVIATOR GAME SCREEN (HTML5 Webview Integration)
+// -----------------------------------------------------------------------------
+class AviatorGameScreen extends StatefulWidget {
+  final double currentBalance;
+  final ValueChanged<double> onBalanceUpdated;
+
+  const AviatorGameScreen({
+    super.key,
+    required this.currentBalance,
+    required this.onBalanceUpdated,
+  });
+
+  @override
+  State<AviatorGameScreen> createState() => _AviatorGameScreenState();
+}
+
+class _AviatorGameScreenState extends State<AviatorGameScreen> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF0A0B0C),
+      body: SafeArea(
+        child: buildAviatorWebView(
+          context,
+          widget.currentBalance,
+          widget.onBalanceUpdated,
+        ),
+      ),
+    );
+  }
+}
+
+// ----------------------------------------------------
+// New Screens for Withdrawal and Bet History
+// ----------------------------------------------------
+
+class WithdrawScreen extends StatefulWidget {
+  const WithdrawScreen({super.key});
+
+  @override
+  State<WithdrawScreen> createState() => _WithdrawScreenState();
+}
+
+class _WithdrawScreenState extends State<WithdrawScreen> {
+  int _selectedMethodIndex = 2; // UPI is selected by default in screenshot (index 2)
+  final TextEditingController _upiIdController = TextEditingController(text: '7088800480-6.wallet@phonepe');
+  final TextEditingController _nameController = TextEditingController(text: 'Satyam kumar');
+  final TextEditingController _accountController = TextEditingController();
+  final TextEditingController _ifscController = TextEditingController();
+  final TextEditingController _amountController = TextEditingController(text: '0');
+
+  final double _balance = 150.57;
+
+  final List<Map<String, dynamic>> _methods = [
+    {
+      'name': 'Bank Transfer',
+      'sub': 'ETA: 30 min',
+      'logo': Icons.account_balance,
+      'isBank': true,
+    },
+    {
+      'name': 'BANK TRAN...',
+      'sub': 'ETA: 30 min',
+      'logo': Icons.account_balance,
+      'isBank': true,
+    },
+    {
+      'name': 'UPI',
+      'sub': 'ETA: 30 min',
+      'logo': Icons.payments,
+      'isBank': false,
+    },
+    {
+      'name': 'iCash.one',
+      'sub': 'ETA: 1 min',
+      'logo': Icons.wallet,
+      'isBank': false,
+    },
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final selectedMethod = _methods[_selectedMethodIndex];
+    final bool isUpi = selectedMethod['name'] == 'UPI';
+    final bool isBank = selectedMethod['isBank'] == true;
+
+    return VirtualMobileFrame(
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF2F4F7),
+        body: SafeArea(
+          child: Column(
+            children: [
+              // Home-screen style header: balance pill + back button
+              BcGameHeader(
+                balance: _balance,
+                isDark: false,
+                hasBackButton: true,
+                onBackTap: () => Navigator.pop(context),
+              ),
+              // Scrollable body
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.all(16.0),
+                  child: Container(
+                    padding: const EdgeInsets.all(16.0),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFE5E9EC), width: 1.5),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                // 1. Currency
+                Text(
+                  'Currency',
+                  style: GoogleFonts.sourceSans3(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF8A8F95),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  height: 48,
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFE5E9EC), width: 1.5),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 20,
+                        height: 20,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFE05C1F),
+                          shape: BoxShape.circle,
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          '₹',
+                          style: GoogleFonts.sourceSans3(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'INR',
+                        style: GoogleFonts.sourceSans3(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                      const Spacer(),
+                      const Icon(Icons.arrow_drop_down, color: Colors.black),
+                    ],
+                  ),
+                ),
+                
+                const SizedBox(height: 20),
+                // 2. Withdraw Method
+                Text(
+                  'Withdraw Method',
+                  style: GoogleFonts.sourceSans3(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF8A8F95),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                
+                // Wrap Grid
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: List.generate(_methods.length, (index) {
+                    final method = _methods[index];
+                    final isSelected = _selectedMethodIndex == index;
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedMethodIndex = index;
+                        });
+                      },
+                      child: Container(
+                        width: (MediaQuery.of(context).size.width > 500 ? 328 - 32 - 20 : MediaQuery.of(context).size.width - 64 - 20) / 3,
+                        padding: const EdgeInsets.all(8.0),
+                        decoration: BoxDecoration(
+                          color: isSelected ? const Color(0xFFE8F9F0) : const Color(0xFFF2F4F7),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: isSelected ? const Color(0xFF2CD97E) : const Color(0xFFE5E9EC),
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Stack(
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Logo icon box
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(4),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(alpha: 0.02),
+                                        blurRadius: 2,
+                                      ),
+                                    ],
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(method['logo'], size: 12, color: Colors.black),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        method['name'] == 'UPI' ? 'UPI' : (method['name'] == 'iCash.one' ? 'ic' : 'BANK'),
+                                        style: GoogleFonts.sourceSans3(
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.w900,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  method['name'],
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.sourceSans3(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  method['sub'],
+                                  style: GoogleFonts.sourceSans3(
+                                    fontSize: 9,
+                                    color: const Color(0xFF8A8F95),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (isSelected)
+                              Positioned(
+                                right: 0,
+                                top: 0,
+                                child: Container(
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFF2CD97E),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  padding: const EdgeInsets.all(2),
+                                  child: const Icon(Icons.check, size: 8, color: Colors.black),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+
+                const SizedBox(height: 20),
+                
+                // 3. Form fields dynamically based on selection
+                if (isUpi) ...[
+                  _buildLabel('UPI ID *'),
+                  _buildInput(_upiIdController, 'Enter UPI ID'),
+                  const SizedBox(height: 16),
+                  _buildLabel('Account Holder Name *'),
+                  _buildInput(_nameController, 'Enter name'),
+                ] else if (isBank) ...[
+                  _buildLabel('Account Holder Name *'),
+                  _buildInput(_nameController, 'Enter name'),
+                  const SizedBox(height: 16),
+                  _buildLabel('Account *'),
+                  _buildInput(_accountController, 'Enter Account Number'),
+                  const SizedBox(height: 16),
+                  _buildLabel('IFSC Code *'),
+                  _buildInput(_ifscController, 'Enter IFSC Code'),
+                ] else ...[
+                  // iCash.one or other
+                  _buildLabel('Account ID *'),
+                  _buildInput(_accountController, 'Enter account ID'),
+                ],
+
+                const SizedBox(height: 20),
+                
+                // 4. Withdraw Amount
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Withdraw Amount',
+                      style: GoogleFonts.sourceSans3(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF8A8F95),
+                      ),
+                    ),
+                    Text(
+                      'Min: ₹420.00',
+                      style: GoogleFonts.sourceSans3(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFFFF4D4D),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                _buildInput(_amountController, '0', keyboardType: TextInputType.number),
+                
+                const SizedBox(height: 12),
+                
+                // Min, 25%, 50%, Max buttons row
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _buildPercentButton('Min', () {
+                      _amountController.text = '420.00';
+                    }),
+                    _buildPercentButton('25%', () {
+                      _amountController.text = (_balance * 0.25).toStringAsFixed(2);
+                    }),
+                    _buildPercentButton('50%', () {
+                      _amountController.text = (_balance * 0.50).toStringAsFixed(2);
+                    }),
+                    _buildPercentButton('Max', () {
+                      _amountController.text = _balance.toStringAsFixed(2);
+                    }),
+                  ],
+                ),
+                
+                const SizedBox(height: 16),
+                
+                // Available Balance
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    'Available: ₹${_balance.toStringAsFixed(2)}',
+                    style: GoogleFonts.sourceSans3(
+                      fontSize: 12,
+                      color: const Color(0xFF595F67),
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                
+                const SizedBox(height: 24),
+                
+                // 5. Withdraw Submit button
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: _handleSubmit,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2CD97E).withValues(alpha: 0.5), // Match screenshot light green
+                      foregroundColor: Colors.black,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: Text(
+                      'Withdraw',
+                      style: GoogleFonts.sourceSans3(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 16,
+                        color: Colors.black.withValues(alpha: 0.6),
+                      ),
+                    ),
+                  ),
+                ),
+              ],       // Column children (inside Container)
+            ),         // Column
+          ),           // Container
+        ),             // SingleChildScrollView
+      ),               // Expanded
+    ],                 // outer Column children
+  ),                   // outer Column
+),                     // SafeArea
+      ),               // Scaffold
+    );                 // VirtualMobileFrame return
+  }
+
+  Widget _buildLabel(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Text(
+        text,
+        style: GoogleFonts.sourceSans3(
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+          color: const Color(0xFF8A8F95),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInput(TextEditingController controller, String hint, {TextInputType keyboardType = TextInputType.text}) {
+    return Container(
+      height: 48,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFE5E9EC), width: 1.5),
+      ),
+      child: TextField(
+        controller: controller,
+        keyboardType: keyboardType,
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: GoogleFonts.sourceSans3(color: const Color(0xFF8A8F95), fontSize: 13),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          border: InputBorder.none,
+          isDense: true,
+        ),
+        style: GoogleFonts.sourceSans3(fontSize: 13, color: Colors.black, fontWeight: FontWeight.w600),
+      ),
+    );
+  }
+
+  Widget _buildPercentButton(String label, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        child: Text(
+          label,
           style: GoogleFonts.sourceSans3(
-            color: Colors.white,
+            fontSize: 12,
             fontWeight: FontWeight.w900,
-            fontSize: 16,
+            color: const Color(0xFF595F67),
           ),
         ),
-        centerTitle: true,
       ),
-      body: buildMinesWebView(
-        context,
-        widget.currentBalance,
-        widget.onBalanceUpdated,
+    );
+  }
+
+  void _handleSubmit() {
+    final double amount = double.tryParse(_amountController.text) ?? 0.0;
+    if (amount < 420.00) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Minimum withdrawal amount is ₹420.00'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    if (amount > _balance) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Insufficient balance'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Success Modal
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text(
+            'Request Submitted',
+            style: GoogleFonts.sourceSans3(fontWeight: FontWeight.w900),
+          ),
+          content: Text(
+            'Your withdrawal request of ₹$amount has been submitted successfully.\nETA: 30 minutes.',
+            style: GoogleFonts.sourceSans3(fontWeight: FontWeight.w600),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Pop dialog
+                Navigator.pop(context); // Pop screen
+              },
+              child: Text(
+                'OK',
+                style: GoogleFonts.sourceSans3(color: const Color(0xFF2CD97E), fontWeight: FontWeight.w900),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class BetHistoryScreen extends StatefulWidget {
+  const BetHistoryScreen({super.key});
+
+  @override
+  State<BetHistoryScreen> createState() => _BetHistoryScreenState();
+}
+
+class _BetHistoryScreenState extends State<BetHistoryScreen> {
+  String _selectedFilter1 = 'All';
+  String _selectedFilter2 = 'All Assets';
+  String _selectedFilter3 = 'Past 24 hours';
+
+  final List<Map<String, dynamic>> _bets = [
+    {'game': 'Plinko', 'time': '31/08/2026, 00:20:36', 'multiplier': '0.2x', 'wager': 10.0, 'win': false},
+    {'game': 'Plinko', 'time': '31/08/2026, 00:20:36', 'multiplier': '0.2x', 'wager': 10.0, 'win': false},
+    {'game': 'Plinko', 'time': '31/08/2026, 00:20:35', 'multiplier': '4x', 'wager': 20.0, 'win': true},
+    {'game': 'Plinko', 'time': '31/08/2026, 00:20:35', 'multiplier': '0.2x', 'wager': 10.0, 'win': false},
+    {'game': 'Plinko', 'time': '31/08/2026, 00:20:35', 'multiplier': '0.2x', 'wager': 15.0, 'win': false},
+    {'game': 'Plinko', 'time': '31/08/2026, 00:20:35', 'multiplier': '0.2x', 'wager': 10.0, 'win': false},
+    {'game': 'Plinko', 'time': '31/08/2026, 00:20:34', 'multiplier': '0.2x', 'wager': 10.0, 'win': false},
+    {'game': 'Plinko', 'time': '31/08/2026, 00:20:34', 'multiplier': '0.2x', 'wager': 10.0, 'win': false},
+    {'game': 'Plinko', 'time': '31/08/2026, 00:20:33', 'multiplier': '1.5x', 'wager': 30.0, 'win': true},
+    {'game': 'Plinko', 'time': '31/08/2026, 00:20:32', 'multiplier': '0.2x', 'wager': 10.0, 'win': false},
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return VirtualMobileFrame(
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF2F4F7),
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          centerTitle: true,
+          title: Text(
+            'BetHistory',
+            style: GoogleFonts.sourceSans3(
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+              color: Colors.black,
+            ),
+          ),
+          leading: Container(
+            margin: const EdgeInsets.all(8),
+            decoration: const BoxDecoration(
+              color: Color(0xFFF2F4F7),
+              shape: BoxShape.circle,
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.chevron_left, color: Colors.black, size: 18),
+              onPressed: () => Navigator.pop(context),
+              padding: EdgeInsets.zero,
+            ),
+          ),
+        ),
+        body: Column(
+          children: [
+            // 1. Dropdown Filters
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                children: [
+                  // Row 1: All
+                  _buildDropdownButton(_selectedFilter1, (val) {
+                    setState(() {
+                      _selectedFilter1 = val;
+                    });
+                  }, ['All', 'Wins', 'Losses', 'High Rollers']),
+                  const SizedBox(height: 8),
+                  // Row 2: All Assets & Past 24 hours
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildDropdownButton(_selectedFilter2, (val) {
+                          setState(() {
+                            _selectedFilter2 = val;
+                          });
+                        }, ['All Assets', 'INR', 'USDT']),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _buildDropdownButton(_selectedFilter3, (val) {
+                          setState(() {
+                            _selectedFilter3 = val;
+                          });
+                        }, ['Past 24 hours', 'Past 7 days', 'All time']),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            
+            // 2. Table Header
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+              color: Colors.white,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Type',
+                    style: GoogleFonts.sourceSans3(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF8A8F95),
+                    ),
+                  ),
+                  Text(
+                    'Wager',
+                    style: GoogleFonts.sourceSans3(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF8A8F95),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            // Divider
+            Container(
+              height: 1.0,
+              color: const Color(0xFFE5E9EC),
+            ),
+            
+            // 3. Bets list
+            Expanded(
+              child: ListView.separated(
+                physics: const BouncingScrollPhysics(),
+                itemCount: _bets.length,
+                separatorBuilder: (context, index) => Container(
+                  height: 1.0,
+                  color: const Color(0xFFE5E9EC),
+                ),
+                itemBuilder: (context, index) {
+                  final bet = _bets[index];
+
+
+                  return Container(
+                    color: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // Left: Game & Timestamp
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              bet['game'],
+                              style: GoogleFonts.sourceSans3(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.black,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              bet['time'],
+                              style: GoogleFonts.sourceSans3(
+                                fontSize: 11,
+                                color: const Color(0xFF8A8F95),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                        // Right: Multiplier & Amount
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              bet['multiplier'],
+                              style: GoogleFonts.sourceSans3(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.black,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  '₹${(bet['wager'] as double).toStringAsFixed(2)}',
+                                  style: GoogleFonts.sourceSans3(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: const Color(0xFFFF4D4D), // All wagers are negative/lost or red in screenshots
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Container(
+                                  width: 14,
+                                  height: 14,
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFFE05C1F),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    '₹',
+                                    style: GoogleFonts.sourceSans3(
+                                      color: Colors.white,
+                                      fontSize: 8,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDropdownButton(String currentVal, ValueChanged<String> onChanged, List<String> options) {
+    return Container(
+      height: 40,
+      padding: const EdgeInsets.symmetric(horizontal: 12.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFE5E9EC), width: 1.5),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: currentVal,
+          icon: const Icon(Icons.keyboard_arrow_down, color: Colors.black, size: 18),
+          elevation: 4,
+          style: GoogleFonts.sourceSans3(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: Colors.black,
+          ),
+          onChanged: (String? newValue) {
+            if (newValue != null) {
+              onChanged(newValue);
+            }
+          },
+          items: options.map<DropdownMenuItem<String>>((String value) {
+            return DropdownMenuItem<String>(
+              value: value,
+              child: Text(value),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+}
+
+class BcGameHeader extends StatelessWidget {
+  final double balance;
+  final bool isDark;
+  final bool hasBackButton;
+  final VoidCallback? onBackTap;
+
+  const BcGameHeader({
+    super.key,
+    required this.balance,
+    this.isDark = false,
+    this.hasBackButton = false,
+    this.onBackTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final Color bgColor = isDark ? const Color(0xFF1E2024) : Colors.transparent;
+    final Color cardColor = isDark ? const Color(0xFF17181B) : Colors.white;
+    final Color borderColor = isDark ? const Color(0xFF2F3136) : const Color(0xFFE5E9EC);
+    final Color textColor = isDark ? Colors.white : Colors.black;
+
+    return Container(
+      color: bgColor,
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
+      child: Row(
+        children: [
+          if (hasBackButton) ...[
+            IconButton(
+              icon: Icon(Icons.arrow_back_ios_new, color: isDark ? Colors.white : Colors.black, size: 18),
+              onPressed: onBackTap,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+            ),
+            const SizedBox(width: 8),
+          ],
+          
+          // Left logo/icon
+          if (!isDark) ...[
+            Image.asset(
+              'assets/dashboard/logo.png',
+              height: 28,
+              fit: BoxFit.contain,
+            ),
+            const SizedBox(width: 8),
+          ],
+          
+          // Balance container
+          Container(
+            width: 181,
+            height: 38,
+            decoration: BoxDecoration(
+              color: cardColor,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: borderColor, width: 1.5),
+                boxShadow: isDark
+                    ? []
+                    : [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.03),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+              ),
+              child: Row(
+                children: [
+                  const SizedBox(width: 6),
+                  Image.asset(
+                    'assets/dashboard/rupee.png',
+                    height: 20,
+                    width: 20,
+                    fit: BoxFit.contain,
+                  ),
+                  const SizedBox(width: 5),
+                  Text(
+                    '₹ ${balance.toStringAsFixed(2)}',
+                    style: GoogleFonts.sourceSans3(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      color: textColor,
+                    ),
+                  ),
+                  const Spacer(),
+                  Bounceable(
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Plus button clicked'),
+                          duration: Duration(seconds: 1),
+                        ),
+                      );
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 4.0, top: 3.0, bottom: 3.0),
+                      child: Container(
+                        width: 30,
+                        height: 30,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2CD97E),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Icon(
+                          Icons.add,
+                          color: Colors.black,
+                          size: 18,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          const Spacer(),
+          
+          // Gift button
+          Bounceable(
+            onTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Gift button clicked'),
+                  duration: Duration(seconds: 1),
+                ),
+              );
+            },
+            child: Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: cardColor,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: borderColor, width: 1.5),
+                boxShadow: isDark
+                    ? []
+                    : [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.03),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+              ),
+              alignment: Alignment.center,
+              child: Image.asset('assets/dashboard/gift.png', height: 24, width: 24, color: isDark ? const Color(0xFF8A8F95) : null),
+            ),
+          ),
+          const SizedBox(width: 8),
+          
+          // Notification button
+          Bounceable(
+            onTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Notification button clicked'),
+                  duration: Duration(seconds: 1),
+                ),
+              );
+            },
+            child: Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: cardColor,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: borderColor, width: 1.5),
+                boxShadow: isDark
+                    ? []
+                    : [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.03),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+              ),
+              alignment: Alignment.center,
+              child: Image.asset('assets/dashboard/bell.png', height: 24, width: 24, color: isDark ? const Color(0xFF8A8F95) : null),
+            ),
+          ),
+          const SizedBox(width: 8),
+          
+          // Avatar
+          ClipRRect(
+            borderRadius: BorderRadius.circular(18),
+            child: Image.asset(
+              'assets/dashboard/avatar.png',
+              height: 36,
+              width: 36,
+              fit: BoxFit.cover,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class MineTile extends StatefulWidget {
+  final bool isRevealed;
+  final bool isMine;
+  final VoidCallback onTap;
+  final int index;
+
+  const MineTile({
+    super.key,
+    required this.isRevealed,
+    required this.isMine,
+    required this.onTap,
+    required this.index,
+  });
+
+  @override
+  State<MineTile> createState() => _MineTileState();
+}
+
+class _MineTileState extends State<MineTile> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.isRevealed) {
+      return AnimatedSwitcher(
+        duration: const Duration(milliseconds: 150),
+        child: widget.isMine
+            ? Image.asset(
+                'assets/mine/Image.png',
+                key: ValueKey('mine_${widget.index}'),
+                fit: BoxFit.contain,
+                errorBuilder: (ctx, err, stack) => const Icon(Icons.brightness_low, color: Colors.red),
+              )
+            : Container(
+                key: ValueKey('gem_${widget.index}'),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF5A3BC0), // Solid purple container box background
+                  borderRadius: BorderRadius.circular(7.27),
+                ),
+                padding: const EdgeInsets.all(4.0),
+                child: Image.asset(
+                  'assets/mine/Container (1).png',
+                  fit: BoxFit.contain,
+                  errorBuilder: (ctx, err, stack) => const Icon(Icons.diamond, color: Colors.white),
+                ),
+              ),
+      );
+    }
+
+    // 3D Button style for unrevealed state
+    final double offset = _isPressed ? 1.0 : 4.0;
+
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) {
+        setState(() => _isPressed = false);
+        widget.onTap();
+      },
+      onTapCancel: () => setState(() => _isPressed = false),
+      child: Stack(
+        children: [
+          // 1. Shadow/Background layer (Bottom depth shadow)
+          Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF202424), // Darker base shadow depth
+              borderRadius: BorderRadius.circular(7.27),
+            ),
+          ),
+          
+          // 2. Front sliding layer
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 50),
+            transform: Matrix4.translationValues(0, -offset, 0),
+            decoration: BoxDecoration(
+              color: const Color(0xFF444B4E), // Exact color from CSS style
+              borderRadius: BorderRadius.circular(7.27),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.15),
+                  blurRadius: 1,
+                  offset: const Offset(0, 0.5),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
