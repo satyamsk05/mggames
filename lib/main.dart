@@ -1997,7 +1997,7 @@ class _MinesGameScreenState extends State<MinesGameScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF313738),
+      backgroundColor: const Color(0xFFF2F4F7),
       body: SafeArea(
         child: buildMinesWebView(
           context,
@@ -2030,7 +2030,7 @@ class _CrashGameScreenState extends State<CrashGameScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1E2024),
+      backgroundColor: const Color(0xFFF2F4F7),
       body: SafeArea(
         child: buildCrashWebView(
           context,
@@ -2063,7 +2063,7 @@ class _AviatorGameScreenState extends State<AviatorGameScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0B0C),
+      backgroundColor: const Color(0xFFF2F4F7),
       body: SafeArea(
         child: buildAviatorWebView(
           context,

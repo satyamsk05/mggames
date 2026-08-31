@@ -1,20 +1,20 @@
 :root {
-  --bg-dark: #313738;
-  --panel-dark: #313738;
-  --tile-bg: #213743;
-  --tile-hover: #2c4656;
-  --color-green: #00e676;
-  --color-green-glow: rgba(0, 230, 118, 0.45);
-  --color-red: #ff1744;
-  --color-red-glow: rgba(255, 23, 68, 0.45);
-  --color-cyan: #00b0ff;
-  --color-cyan-glow: rgba(0, 176, 255, 0.45);
-  --color-purple: #8b5cf6;
-  --color-purple-glow: rgba(139, 92, 246, 0.45);
-  --color-gold: #ffc400;
-  --color-gold-glow: rgba(255, 196, 0, 0.45);
-  --color-text: #f5f7f8;
-  --color-text-muted: #98a6b1;
+  --bg-dark: #F2F4F7;
+  --panel-dark: #FFFFFF;
+  --tile-bg: #E8EDF2;
+  --tile-hover: #D8E2EA;
+  --color-green: #18a558;
+  --color-green-glow: rgba(24, 165, 88, 0.3);
+  --color-red: #e53935;
+  --color-red-glow: rgba(229, 57, 53, 0.3);
+  --color-cyan: #0288d1;
+  --color-cyan-glow: rgba(2, 136, 209, 0.3);
+  --color-purple: #7c3aed;
+  --color-purple-glow: rgba(124, 58, 237, 0.3);
+  --color-gold: #f59e0b;
+  --color-gold-glow: rgba(245, 158, 11, 0.3);
+  --color-text: #0d1117;
+  --color-text-muted: #5A6272;
   --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
@@ -47,15 +47,15 @@ html, body {
 }
 
 /* ═══════════════════════════════════════════════════════
-   BC.GAME UNIFIED HEADER  (matches home screen style)
+   BC.GAME UNIFIED HEADER  — Light Mode
    ═══════════════════════════════════════════════════════ */
 .bcg-header {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 10px 14px;
-  background: #1E2024;
-  border-bottom: 1px solid #2F3136;
+  background: #FFFFFF;
+  border-bottom: 1px solid #E5E9EC;
   position: sticky;
   top: 0;
   z-index: 100;
@@ -63,19 +63,19 @@ html, body {
 
 /* Back button */
 .bcg-back-btn {
-  background: #17181B;
-  border: 1.5px solid #2F3136;
+  background: #F2F4F7;
+  border: 1.5px solid #E5E9EC;
   width: 36px;
   height: 36px;
   border-radius: 8px;
   display: grid;
   place-items: center;
   cursor: pointer;
-  color: #fff;
+  color: #0d1117;
   flex-shrink: 0;
   transition: background 0.15s;
 }
-.bcg-back-btn:hover { background: #2c2f35; }
+.bcg-back-btn:hover { background: #E5E9EC; }
 
 /* BC.Game Logo area */
 .bcg-logo {
@@ -88,21 +88,22 @@ html, body {
   font-family: 'Inter', sans-serif;
   font-weight: 800;
   font-size: 15px;
-  color: #fff;
+  color: #0d1117;
   letter-spacing: 0.3px;
 }
 
-/* Balance Pill — same as home screen */
+/* Balance Pill — same as home screen light */
 .bcg-balance-pill {
   display: flex;
   align-items: center;
-  background: #17181B;
-  border: 1.5px solid #2F3136;
+  background: #FFFFFF;
+  border: 1.5px solid #E5E9EC;
   border-radius: 10px;
   height: 36px;
   padding: 0 4px 0 8px;
   gap: 5px;
   min-width: 140px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
 }
 
 /* Orange rupee coin */
@@ -124,7 +125,7 @@ html, body {
   font-family: 'Inter', sans-serif;
   font-weight: 700;
   font-size: 14px;
-  color: #fff;
+  color: #0d1117;
   flex: 1;
 }
 .bcg-balance-val::before { content: '₹ '; }
@@ -148,23 +149,26 @@ html, body {
 }
 .bcg-plus-btn:hover { background: #25c471; }
 
-/* Extra icon buttons (mute etc.) */
+/* Extra icon buttons */
 .bcg-icon-btn {
-  background: #17181B;
-  border: 1.5px solid #2F3136;
+  background: #F2F4F7;
+  border: 1.5px solid #E5E9EC;
   width: 36px;
   height: 36px;
   border-radius: 8px;
   display: grid;
   place-items: center;
   cursor: pointer;
-  color: #8A8F95;
+  color: #5A6272;
   flex-shrink: 0;
   transition: color 0.15s, background 0.15s;
 }
-.bcg-icon-btn:hover { color: #fff; background: #2c2f35; }
+.bcg-icon-btn:hover { color: #0d1117; background: #E5E9EC; }
 
 
+
+/* --- Old wallet styles (kept for compat) --- */
+.wallet-icon {
   color: var(--color-green);
   display: flex;
   align-items: center;

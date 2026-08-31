@@ -1,20 +1,19 @@
-/* ===== CSS Variables - Spribe Aviator Theme ===== */
 :root {
-    --bg-nav: #101112;
-    --bg-history: #0a0b0c;
-    --bg-panel: #141516;
-    --bg-card: #1b1c1e;
-    --bg-input: #000000;
-    --bg-btn-adjust: #27282a;
+    --bg-nav: #FFFFFF;
+    --bg-history: #F2F4F7;
+    --bg-panel: #FFFFFF;
+    --bg-card: #F8F9FB;
+    --bg-input: #F2F4F7;
+    --bg-btn-adjust: #E5E9EC;
 
-    --accent-green: #28a745;
-    --accent-green-hover: #218838;
-    --accent-red: #d32f2f;
-    --accent-blue: #1e88e5;
+    --accent-green: #18a558;
+    --accent-green-hover: #15934e;
+    --accent-red: #e53935;
+    --accent-blue: #1565c0;
 
-    --text-primary: #ffffff;
-    --text-secondary: #9cb1bc;
-    --text-muted: #5e727e;
+    --text-primary: #0d1117;
+    --text-secondary: #3D4A5C;
+    --text-muted: #8A96A3;
 
     --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     --radius-sm: 6px;
@@ -68,19 +67,18 @@ body {
     flex-shrink: 0;
 }
 
-/* ── BCG Unified Header ── */
-.bcg-header { background: #1E2024 !important; border-bottom: 1px solid #2F3136 !important; gap: 10px; justify-content: flex-start !important; height: auto !important; padding: 10px 14px; }
-.bcg-back-btn { background: #17181B; border: 1.5px solid #2F3136; width: 36px; height: 36px; border-radius: 8px; display: grid; place-items: center; cursor: pointer; color: #fff; flex-shrink: 0; }
+/* ── BCG Unified Header — Light Mode ── */
+.bcg-header { background: #FFFFFF !important; border-bottom: 1px solid #E5E9EC !important; gap: 10px; justify-content: flex-start !important; height: auto !important; padding: 10px 14px; }
+.bcg-back-btn { background: #F2F4F7; border: 1.5px solid #E5E9EC; width: 36px; height: 36px; border-radius: 8px; display: grid; place-items: center; cursor: pointer; color: #0d1117; flex-shrink: 0; }
 .bcg-logo { display: flex; align-items: center; gap: 6px; flex: 1; }
-.bcg-logo-text { font-family: 'Inter', sans-serif; font-weight: 800; font-size: 15px; color: #fff; }
-.bcg-balance-pill { display: flex; align-items: center; background: #17181B; border: 1.5px solid #2F3136; border-radius: 10px; height: 36px; padding: 0 4px 0 8px; gap: 5px; min-width: 130px; }
+.bcg-logo-text { font-family: 'Inter', sans-serif; font-weight: 800; font-size: 15px; color: #0d1117; }
+.bcg-balance-pill { display: flex; align-items: center; background: #FFFFFF; border: 1.5px solid #E5E9EC; border-radius: 10px; height: 36px; padding: 0 4px 0 8px; gap: 5px; min-width: 130px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
 .bcg-coin { width: 22px; height: 22px; background: #E8A63A; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 800; color: #fff; flex-shrink: 0; }
-.bcg-balance-val { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 14px; color: #fff; flex: 1; }
+.bcg-balance-val { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 14px; color: #0d1117; flex: 1; }
 .bcg-balance-val::before { content: '₹ '; }
 .bcg-plus-btn { background: #2CD97E; border: none; width: 28px; height: 28px; border-radius: 6px; display: grid; place-items: center; font-size: 20px; font-weight: 700; color: #0d1117; cursor: pointer; flex-shrink: 0; line-height: 1; }
-.bcg-icon-btn { background: #17181B; border: 1.5px solid #2F3136; width: 36px; height: 36px; border-radius: 8px; display: grid; place-items: center; cursor: pointer; color: #8A8F95; flex-shrink: 0; }
+.bcg-icon-btn { background: #F2F4F7; border: 1.5px solid #E5E9EC; width: 36px; height: 36px; border-radius: 8px; display: grid; place-items: center; cursor: pointer; color: #5A6272; flex-shrink: 0; }
 .bcg-header .nav-actions { display: flex; gap: 8px; }
-
 
 
 .logo-box {
