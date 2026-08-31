@@ -46,78 +46,125 @@ html, body {
   position: relative;
 }
 
-/* --- HEADER BAR --- */
-header {
+/* ═══════════════════════════════════════════════════════
+   BC.GAME UNIFIED HEADER  (matches home screen style)
+   ═══════════════════════════════════════════════════════ */
+.bcg-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
-  background: rgba(26, 44, 56, 0.5);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  gap: 10px;
+  padding: 10px 14px;
+  background: #1E2024;
+  border-bottom: 1px solid #2F3136;
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 100;
 }
 
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.brand svg {
-  width: 24px;
-  height: 24px;
-  fill: var(--color-green);
-}
-
-.brand-title {
-  font-size: 16px;
-  font-weight: 800;
-  letter-spacing: 0.5px;
-  background: linear-gradient(90deg, #fff, var(--color-text-muted));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.action-btn {
-  background: var(--panel-dark);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+/* Back button */
+.bcg-back-btn {
+  background: #17181B;
+  border: 1.5px solid #2F3136;
   width: 36px;
   height: 36px;
-  border-radius: 50%;
+  border-radius: 8px;
   display: grid;
   place-items: center;
   cursor: pointer;
-  color: var(--color-text-muted);
-  transition: all 0.2s ease;
+  color: #fff;
+  flex-shrink: 0;
+  transition: background 0.15s;
 }
+.bcg-back-btn:hover { background: #2c2f35; }
 
-.action-btn:hover {
-  color: var(--color-text);
-  background: var(--tile-hover);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-/* --- WALLET BLOCK --- */
-.wallet-box {
+/* BC.Game Logo area */
+.bcg-logo {
   display: flex;
   align-items: center;
-  background: #101c24;
-  padding: 6px 12px;
-  border-radius: 30px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  gap: 8px;
+  gap: 6px;
+  flex: 1;
+}
+.bcg-logo-text {
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  font-size: 15px;
+  color: #fff;
+  letter-spacing: 0.3px;
 }
 
-.wallet-icon {
+/* Balance Pill — same as home screen */
+.bcg-balance-pill {
+  display: flex;
+  align-items: center;
+  background: #17181B;
+  border: 1.5px solid #2F3136;
+  border-radius: 10px;
+  height: 36px;
+  padding: 0 4px 0 8px;
+  gap: 5px;
+  min-width: 140px;
+}
+
+/* Orange rupee coin */
+.bcg-coin {
+  width: 22px;
+  height: 22px;
+  background: #E8A63A;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+/* Balance value */
+.bcg-balance-val {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: #fff;
+  flex: 1;
+}
+.bcg-balance-val::before { content: '₹ '; }
+
+/* Green + deposit button */
+.bcg-plus-btn {
+  background: #2CD97E;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  font-weight: 700;
+  color: #0d1117;
+  cursor: pointer;
+  flex-shrink: 0;
+  line-height: 1;
+  transition: background 0.15s;
+}
+.bcg-plus-btn:hover { background: #25c471; }
+
+/* Extra icon buttons (mute etc.) */
+.bcg-icon-btn {
+  background: #17181B;
+  border: 1.5px solid #2F3136;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: #8A8F95;
+  flex-shrink: 0;
+  transition: color 0.15s, background 0.15s;
+}
+.bcg-icon-btn:hover { color: #fff; background: #2c2f35; }
+
+
   color: var(--color-green);
   display: flex;
   align-items: center;

@@ -79,6 +79,21 @@
             flex-shrink: 0;
         }
 
+        /* ── BCG Unified Header ── */
+        .bcg-header { background: #1E2024; border-bottom: 1px solid #2F3136; gap: 10px; justify-content: flex-start; height: auto; padding: 10px 14px; }
+        .bcg-back-btn { background: #17181B; border: 1.5px solid #2F3136; width: 36px; height: 36px; border-radius: 8px; display: grid; place-items: center; cursor: pointer; color: #fff; flex-shrink: 0; }
+        .bcg-logo { display: flex; align-items: center; gap: 6px; flex: 1; }
+        .bcg-logo-text { font-family: 'Inter', sans-serif; font-weight: 800; font-size: 15px; color: #fff; }
+        .bcg-balance-pill { display: flex; align-items: center; background: #17181B; border: 1.5px solid #2F3136; border-radius: 10px; height: 36px; padding: 0 4px 0 8px; gap: 5px; min-width: 130px; }
+        .bcg-coin { width: 22px; height: 22px; background: #E8A63A; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 800; color: #fff; flex-shrink: 0; }
+        .bcg-balance-val { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 14px; color: #fff; flex: 1; }
+        .bcg-balance-val::before { content: '₹ '; }
+        .bcg-plus-btn { background: #2CD97E; border: none; width: 28px; height: 28px; border-radius: 6px; display: grid; place-items: center; font-size: 20px; font-weight: 700; color: #0d1117; cursor: pointer; flex-shrink: 0; line-height: 1; }
+        .bcg-icon-btn { background: #17181B; border: 1.5px solid #2F3136; width: 36px; height: 36px; border-radius: 8px; display: grid; place-items: center; cursor: pointer; color: #8A8F95; flex-shrink: 0; }
+        .bcg-header .nav-actions { display: flex; gap: 8px; }
+
+
+
         .balance-pill {
             display: flex;
             align-items: center;
@@ -640,30 +655,43 @@
     <div class="win-notification" id="winNotification">+₹0.00</div>
 
     <div class="app">
-        <!-- Top Navigation -->
-        <div class="top-nav">
-            <button class="nav-icon-btn back-btn" id="btnBack">
-                <svg viewBox="0 0 24 24">
+        <!-- BC.Game Unified Header -->
+        <div class="top-nav bcg-header">
+            <!-- Back Button -->
+            <button class="bcg-back-btn" id="btnBack">
+                <svg viewBox="0 0 24 24" width="18" height="18">
                     <path fill="currentColor" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
                 </svg>
             </button>
-            <div class="balance-pill">
-                <div class="gold-coin">₹</div>
-                <span class="balance-val" id="balanceText">150.57</span>
-                <div class="plus-btn">+</div>
+
+            <!-- BC.Game Logo -->
+            <div class="bcg-logo">
+                <svg width="22" height="22" viewBox="0 0 100 100" fill="none">
+                    <circle cx="50" cy="50" r="50" fill="#2CD97E"/>
+                    <text x="50" y="67" text-anchor="middle" font-family="Inter,sans-serif" font-weight="900" font-size="52" fill="#0d1117">B</text>
+                </svg>
+                <span class="bcg-logo-text">BC.Game</span>
             </div>
+
+            <!-- Balance Pill -->
+            <div class="bcg-balance-pill">
+                <div class="bcg-coin">₹</div>
+                <span class="bcg-balance-val" id="balanceText">150.57</span>
+                <button class="bcg-plus-btn" title="Deposit">+</button>
+            </div>
+
+            <!-- Extra actions -->
             <div class="nav-actions">
-                <button class="nav-icon-btn">
-                    <svg viewBox="0 0 24 24"><path fill="currentColor" d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/></svg>
+                <button class="bcg-icon-btn">
+                    <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
                 </button>
-                <button class="nav-icon-btn">
-                    <svg viewBox="0 0 24 24"><path fill="currentColor" d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
-                </button>
-                <button class="nav-icon-btn">
-                    <svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+                <button class="bcg-icon-btn">
+                    <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
                 </button>
             </div>
         </div>
+
+
 
         <!-- History Bar -->
         <div class="history-bar" id="historyBar">

@@ -14,42 +14,42 @@
   <!-- Particles Canvas Overlay -->
   <div id="particles-container"></div>
 
-  <!-- HEADER -->
-  <header>
-    <div class="brand">
-      <svg viewBox="0 0 24 24">
-        <path d="M12 2L2 22h20L12 2zm0 4l6.5 13H5.5L12 6z"/>
+  <!-- HEADER: BC.Game Style (matches home screen) -->
+  <header class="bcg-header">
+    <!-- Left: Back Button -->
+    <button class="bcg-back-btn" id="btnBack" title="Exit Game">
+      <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+        <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
       </svg>
-      <span class="brand-title">MINES PRO</span>
-    </div>
-    
-    <div class="header-actions">
-      <!-- Wallet -->
-      <div class="wallet-box">
-        <span class="wallet-icon">
-          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-            <path d="M12.136.326A1.5 1.5 0 0 1 14 1.78V3h.5A1.5 1.5 0 0 1 16 4.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 13.5v-9A1.5 1.5 0 0 1 1.5 3H2V1.78a1.5 1.5 0 0 1 1.864-1.454L12.136.326zM3 3h9V1.78a.5.5 0 0 0-.62-.485L3.62 2.295A.5.5 0 0 0 3 2.78V3zm11.5 1h-13a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5z"/>
-          </svg>
-        </span>
-        <span class="wallet-balance" id="headerBalance">₹150.57</span>
-      </div>
+    </button>
 
-      <!-- Mute Toggle -->
-      <button class="action-btn" id="btnMute" title="Toggle Sound">
-        <svg width="18" height="18" fill="currentColor" id="speakerIcon" viewBox="0 0 16 16">
-          <path d="M11.536 14.01A8.47 8.47 0 0 0 14.02 10a8.47 8.47 0 0 0-2.484-4.01L10.5 7.028A6.5 6.5 0 0 1 12 10a6.5 6.5 0 0 1-1.5 2.972l1.036 1.038z"/>
-          <path d="M9.774 11.225A1 1 0 0 1 10 10a1 1 0 0 1-.226-.775l1.03-1.03A2.5 2.5 0 0 1 12 10a2.5 2.5 0 0 1-.422 1.455l-1.03-1.03z"/>
-          <path d="M10.025 8a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h.586l3.293 3.293c.63.63 1.707.184 1.707-.707V3.414c0-.89-1.077-1.337-1.707-.707L10.61 6H10.025z"/>
-        </svg>
-      </button>
-
-      <!-- Back btn -->
-      <button class="action-btn" id="btnBack" title="Exit Game">
-        <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-          <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
-        </svg>
-      </button>
+    <!-- Center: BC.Game Logo -->
+    <div class="bcg-logo">
+      <svg width="22" height="22" viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="50" r="50" fill="#2CD97E"/>
+        <text x="50" y="67" text-anchor="middle" font-family="Inter,sans-serif" font-weight="900" font-size="52" fill="#0d1117">B</text>
+      </svg>
+      <span class="bcg-logo-text">BC.Game</span>
     </div>
+
+    <!-- Right: Balance Pill + Deposit -->
+    <div class="bcg-balance-pill">
+      <!-- Rupee Coin Icon -->
+      <div class="bcg-coin">₹</div>
+      <!-- Balance Text -->
+      <span class="bcg-balance-val" id="headerBalance">150.57</span>
+      <!-- Deposit (+) Button -->
+      <button class="bcg-plus-btn" title="Deposit">+</button>
+    </div>
+
+    <!-- Extra Right: Mute -->
+    <button class="bcg-icon-btn" id="btnMute" title="Toggle Sound">
+      <svg width="16" height="16" fill="currentColor" id="speakerIcon" viewBox="0 0 16 16">
+        <path d="M11.536 14.01A8.47 8.47 0 0 0 14.02 10a8.47 8.47 0 0 0-2.484-4.01L10.5 7.028A6.5 6.5 0 0 1 12 10a6.5 6.5 0 0 1-1.5 2.972l1.036 1.038z"/>
+        <path d="M9.774 11.225A1 1 0 0 1 10 10a1 1 0 0 1-.226-.775l1.03-1.03A2.5 2.5 0 0 1 12 10a2.5 2.5 0 0 1-.422 1.455l-1.03-1.03z"/>
+        <path d="M6.717 3.55A.5.5 0 0 1 7 4v8a.5.5 0 0 1-.812.39L3.825 10.5H1.5A.5.5 0 0 1 1 10V6a.5.5 0 0 1 .5-.5h2.325l2.363-1.89a.5.5 0 0 1 .529-.06z"/>
+      </svg>
+    </button>
   </header>
 
   <!-- MULTIPLIERS ROAD -->

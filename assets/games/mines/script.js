@@ -242,7 +242,7 @@
 
   // --- UI UPDATE UTILS ---
   function updateUI() {
-    headerBalance.textContent = `₹${balance.toFixed(2)}`;
+    headerBalance.textContent = `${balance.toFixed(2)}`;
     statProfit.textContent = `₹${totalProfit >= 0 ? '+' : ''}${totalProfit.toFixed(2)}`;
     statWins.textContent = wins;
     statLosses.textContent = losses;
