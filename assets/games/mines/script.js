@@ -2,7 +2,6 @@
   // --- WALLET STATE ---
   let balance = 150.57;
   let betAmount = 10.00;
-  let minesCount = 3;
   let isPlaying = false;
   let revealed = 0;
   let minePositions = new Set();
@@ -190,16 +189,15 @@
   const btnHalf = document.getElementById('btnHalf');
   const btnDouble = document.getElementById('btnDouble');
   const minesSelect = document.getElementById('minesSelect');
-  const minesDisplay = document.getElementById('minesDisplay');
+  const minesValMin = document.getElementById('minesValMin');
   const btnRandom = document.getElementById('btnRandom');
   const btnBet = document.getElementById('btnBet');
   const statusText = document.getElementById('statusText');
   const statProfit = document.getElementById('statProfit');
   const statWins = document.getElementById('statWins');
   const statLosses = document.getElementById('statLosses');
-  const particlesContainer = document.getElementById('particles-container');
 
-  // --- MULTIPLIERS ROAD CALCULATION ---
+  // --- MULTIPLIERS CALCULATION & BET WIN HISTORY ---
   function getMultiplier(mines, revealedCount) {
     if (revealedCount === 0) return 1.00;
     let mult = 1.0;
@@ -209,58 +207,56 @@
     return parseFloat((mult * 0.99).toFixed(2));
   }
 
+  let historyMultipliers = [1.13, 1.29, 1.48, 1.71, 2.00]; // Recent bet history
+
   function updateMultipliersRoad() {
+    if (!multipliersWrapper) return;
     multipliersWrapper.innerHTML = '';
-    const currentMines = parseInt(minesSelect.value);
     
-    // Draw next 5 multiplier predictions
-    for (let i = 1; i <= 6; i++) {
-      const step = revealed + i;
-      if (step > 25 - currentMines) break;
-      
+    // Render past bet win history badges
+    historyMultipliers.slice(-8).forEach(multVal => {
       const badge = document.createElement('div');
       badge.className = 'multiplier-badge';
-      
-      const multVal = getMultiplier(currentMines, step);
-      badge.textContent = `${multVal}x`;
-      
-      if (i === 1 && isPlaying) {
-        badge.classList.add('next');
-        badge.textContent = `Next: ${multVal}x`;
-      }
-      
+      badge.textContent = `${parseFloat(multVal).toFixed(2)}x`;
       multipliersWrapper.appendChild(badge);
-    }
-
-    if (revealed > 0 && isPlaying) {
-      const activeBadge = document.createElement('div');
-      activeBadge.className = 'multiplier-badge active';
-      activeBadge.textContent = `${getMultiplier(currentMines, revealed)}x`;
-      multipliersWrapper.insertBefore(activeBadge, multipliersWrapper.firstChild);
-    }
+    });
   }
 
   // --- UI UPDATE UTILS ---
   function updateUI() {
-    headerBalance.textContent = `${balance.toFixed(2)}`;
-    statProfit.textContent = `₹${totalProfit >= 0 ? '+' : ''}${totalProfit.toFixed(2)}`;
-    statWins.textContent = wins;
-    statLosses.textContent = losses;
+    if (headerBalance) headerBalance.textContent = `${balance.toFixed(2)}`;
+    if (statProfit) statProfit.textContent = `₹${totalProfit >= 0 ? '+' : ''}${totalProfit.toFixed(2)}`;
+    if (statWins) statWins.textContent = wins;
+    if (statLosses) statLosses.textContent = losses;
   }
 
   // --- GAMEPLAY LOGIC ---
   function initBoard() {
-    board.innerHTML = '';
+    if (!board) return;
     tileStates = Array(GRID).fill('hidden');
     
-    for (let i = 0; i < GRID; i++) {
-      const tile = document.createElement('button');
-      tile.type = 'button';
-      tile.className = 'tile';
-      tile.dataset.index = i;
-      tile.addEventListener('click', () => handleTileClick(i, tile));
-      board.appendChild(tile);
+    let tiles = board.querySelectorAll('.tile');
+    if (tiles.length === 0) {
+      board.innerHTML = '';
+      for (let i = 0; i < GRID; i++) {
+        const tile = document.createElement('button');
+        tile.type = 'button';
+        tile.className = 'tile';
+        tile.dataset.index = i;
+        board.appendChild(tile);
+      }
+      tiles = board.querySelectorAll('.tile');
     }
+
+    tiles.forEach((tile, i) => {
+      tile.className = 'tile';
+      tile.innerHTML = '';
+      tile.dataset.index = i;
+      const newTile = tile.cloneNode(true);
+      if (tile.parentNode) tile.parentNode.replaceChild(newTile, tile);
+      newTile.addEventListener('click', () => handleTileClick(i, newTile));
+    });
+
     updateMultipliersRoad();
   }
 
@@ -276,15 +272,25 @@
   }
 
   function handleTileClick(index, tileElement) {
+    // PREVENT TILE OPENING BEFORE BETTING!
+    if (!isPlaying) {
+      sound.playClick();
+      if (statusText) {
+        statusText.textContent = 'Please click BET to start playing!';
+        statusText.style.color = '#f59e0b';
+        setTimeout(() => {
+          if (!isPlaying && statusText) {
+            statusText.textContent = 'Set bet amount and click Bet';
+            statusText.style.color = '#949ea8';
+          }
+        }, 1500);
+      }
+      return; // DO NOT REVEAL TILE WITHOUT BET
+    }
+
     if (tileStates[index] !== 'hidden') return;
     
     sound.playClick();
-
-    if (!isPlaying) {
-      // Auto-start round if user clicks board directly
-      startRound(index);
-    }
-
     revealed++;
     
     // Check hit
@@ -302,9 +308,14 @@
       const nextMult = getMultiplier(currentMines, revealed);
       const winAmount = betAmount * nextMult;
       
-      btnBet.textContent = `Cash Out ₹${winAmount.toFixed(2)}`;
-      btnBet.className = 'btn-main btn-bet cashout';
-      statusText.textContent = `Safe! Payout now: ${nextMult}x`;
+      if (btnBet) {
+        btnBet.textContent = `Cash out ₹${winAmount.toFixed(2)}`;
+        btnBet.className = 'btn-main btn-bet cashout';
+      }
+      if (statusText) {
+        statusText.textContent = `Safe! Payout now: ${nextMult}x`;
+        statusText.style.color = '#949ea8';
+      }
       
       sound.playSafe();
       createSuccessParticles(tileElement);
@@ -349,27 +360,33 @@
     generateMines(firstClickIndex);
 
     // Lock options
-    betInput.disabled = true;
-    minesSelect.disabled = true;
-    btnHalf.disabled = true;
-    btnDouble.disabled = true;
+    if (betInput) betInput.disabled = true;
+    if (minesSelect) minesSelect.disabled = true;
+    if (btnHalf) btnHalf.disabled = true;
+    if (btnDouble) btnDouble.disabled = true;
     
-    btnBet.textContent = 'Cash Out';
-    btnBet.className = 'btn-main btn-bet cashout';
-    statusText.textContent = 'Clear the gems and avoid the mines!';
+    if (btnBet) {
+      btnBet.textContent = 'Cash out ₹0.00';
+      btnBet.className = 'btn-main btn-bet cashout';
+    }
+    if (btnRandom) btnRandom.style.display = 'block';
+    if (statusText) statusText.textContent = 'Clear the gems and avoid the mines!';
   }
 
   function endRound(isWin) {
     isPlaying = false;
     
     // Re-enable controls
-    betInput.disabled = false;
-    minesSelect.disabled = false;
-    btnHalf.disabled = false;
-    btnDouble.disabled = false;
+    if (betInput) betInput.disabled = false;
+    if (minesSelect) minesSelect.disabled = false;
+    if (btnHalf) btnHalf.disabled = false;
+    if (btnDouble) btnDouble.disabled = false;
     
-    btnBet.textContent = 'Start Bet';
-    btnBet.className = 'btn-main btn-bet';
+    if (btnBet) {
+      btnBet.textContent = 'Bet';
+      btnBet.className = 'btn-main btn-bet';
+    }
+    if (btnRandom) btnRandom.style.display = 'none';
 
     const currentMines = parseInt(minesSelect.value);
 
@@ -382,30 +399,38 @@
       totalProfit += profit;
       wins++;
       
-      statusText.textContent = `Won ₹${winnings.toFixed(2)} (${payoutMult}x)!`;
+      // Push won multiplier to recent bet history
+      historyMultipliers.push(payoutMult);
+      if (historyMultipliers.length > 12) historyMultipliers.shift();
+      updateMultipliersRoad();
+      
+      if (statusText) statusText.textContent = `Won ₹${winnings.toFixed(2)} (${payoutMult}x)!`;
       sound.playCashout();
       sendToFlutter('updateBalance', { balance: balance });
-      
       showWinNotification(winnings, payoutMult);
     } else {
       losses++;
       totalProfit -= betAmount;
-      statusText.textContent = 'Boom! You hit a mine.';
+      if (statusText) statusText.textContent = 'Boom! You hit a mine.';
       sound.playMine();
       triggerScreenShake();
     }
 
     // Reveal all remaining hidden tiles as faded/dimmed
-    for (let i = 0; i < GRID; i++) {
-      if (tileStates[i] === 'hidden') {
-        const el = board.children[i];
-        el.classList.add('auto-revealed');
-        if (minePositions.has(i)) {
-          tileStates[i] = 'mine';
-          revealMine(i, el);
-        } else {
-          tileStates[i] = 'gem';
-          revealGem(i, el);
+    if (board) {
+      for (let i = 0; i < GRID; i++) {
+        if (tileStates[i] === 'hidden') {
+          const el = board.children[i];
+          if (el) {
+            el.classList.add('auto-revealed');
+            if (minePositions.has(i)) {
+              tileStates[i] = 'mine';
+              revealMine(i, el);
+            } else {
+              tileStates[i] = 'gem';
+              revealGem(i, el);
+            }
+          }
         }
       }
     }
@@ -516,23 +541,26 @@
       document.body.appendChild(overlay);
     }
     
-    document.getElementById('win-popup-multiplier').textContent = `${multiplier.toFixed(2)}x`;
-    document.getElementById('win-popup-amount').textContent = amount % 1 === 0 ? amount.toFixed(0) : amount.toFixed(2);
+    const popupMult = document.getElementById('win-popup-multiplier');
+    const popupAmt = document.getElementById('win-popup-amount');
+    if (popupMult) popupMult.textContent = `${multiplier.toFixed(2)}x`;
+    if (popupAmt) popupAmt.textContent = amount % 1 === 0 ? amount.toFixed(0) : amount.toFixed(2);
     
     overlay.style.opacity = '1';
     overlay.style.pointerEvents = 'auto';
-    overlay.firstElementChild.style.transform = 'scale(1)';
+    if (overlay.firstElementChild) overlay.firstElementChild.style.transform = 'scale(1)';
     
     if (window.winPopupTimeout) clearTimeout(window.winPopupTimeout);
     window.winPopupTimeout = setTimeout(() => {
       overlay.style.opacity = '0';
       overlay.style.pointerEvents = 'none';
-      overlay.firstElementChild.style.transform = 'scale(0.9)';
+      if (overlay.firstElementChild) overlay.firstElementChild.style.transform = 'scale(0.9)';
     }, 1800);
   }
 
-  // --- FLOATING TEXT & PARTICLES ---
+  // --- FLOATING TEXT & PARTICLES ENGINE (60Hz / 120Hz) ---
   function showFloatingText(element, text) {
+    if (!element || !board) return;
     const rect = element.getBoundingClientRect();
     const containerRect = board.getBoundingClientRect();
     
@@ -550,145 +578,255 @@
     setTimeout(() => ft.remove(), 1000);
   }
 
-  function createSuccessParticles(element) {
-    const rect = element.getBoundingClientRect();
-    const containerRect = particlesContainer.getBoundingClientRect();
-    const clickX = (rect.left + rect.width / 2) - containerRect.left;
-    const clickY = (rect.top + rect.height / 2) - containerRect.top;
-    
-    const colors = ['#8b5cf6', '#a855f7', '#ffffff', '#c084fc'];
-    
-    for (let i = 0; i < 15; i++) {
-      const p = document.createElement('div');
-      p.className = 'particle';
-      p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-      p.style.left = clickX + 'px';
-      p.style.top = clickY + 'px';
-      
-      const angle = Math.random() * Math.PI * 2;
-      const velocity = 2 + Math.random() * 5;
-      const vx = Math.cos(angle) * velocity;
-      const vy = Math.sin(angle) * velocity;
-      
-      particlesContainer.appendChild(p);
-      
-      let posX = clickX;
-      let posY = clickY;
-      let opacity = 1;
-      
-      const animate = () => {
-        posX += vx;
-        posY += vy;
-        opacity -= 0.03;
-        
-        p.style.left = posX + 'px';
-        p.style.top = posY + 'px';
-        p.style.opacity = opacity;
-        
-        if (opacity > 0) {
-          requestAnimationFrame(animate);
-        } else {
-          p.remove();
-        }
-      };
-      
-      requestAnimationFrame(animate);
+  function triggerScreenShake() {
+    if (board) {
+      board.classList.add('shake');
+      setTimeout(() => board.classList.remove('shake'), 400);
     }
   }
 
-  function triggerScreenShake() {
-    board.classList.add('shake');
-    setTimeout(() => board.classList.remove('shake'), 400);
+  // --- HIGH FPS 60Hz / 120Hz CANVAS PARTICLE ENGINE ---
+  const canvas = document.getElementById('particlesCanvas');
+  let ctx = null;
+  let activeParticles = [];
+  let isAnimationRunning = false;
+
+  function resizeCanvas() {
+    if (!canvas) return;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = window.innerWidth * dpr;
+    canvas.height = window.innerHeight * dpr;
+    if (ctx) {
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+  }
+
+  if (canvas) {
+    ctx = canvas.getContext('2d', { alpha: true });
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+  }
+
+  function renderParticlesLoop() {
+    if (!ctx) return;
+    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+    for (let i = activeParticles.length - 1; i >= 0; i--) {
+      const p = activeParticles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += p.gravity;
+      p.alpha -= p.decay;
+      p.size *= 0.97;
+
+      if (p.alpha <= 0 || p.size <= 0.2) {
+        activeParticles.splice(i, 1);
+        continue;
+      }
+
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, p.alpha);
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    if (activeParticles.length > 0) {
+      requestAnimationFrame(renderParticlesLoop);
+    } else {
+      isAnimationRunning = false;
+    }
+  }
+
+  function createSuccessParticles(element) {
+    if (!canvas || !ctx || !element) return;
+    const rect = element.getBoundingClientRect();
+    const clickX = rect.left + rect.width / 2;
+    const clickY = rect.top + rect.height / 2;
+
+    const colors = ['#24EE89', '#7c3aed', '#00e5ff', '#ffffff', '#f59e0b'];
+
+    for (let i = 0; i < 25; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 2.5 + Math.random() * 6;
+      activeParticles.push({
+        x: clickX,
+        y: clickY,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        gravity: 0.12,
+        alpha: 1.0,
+        decay: 0.02 + Math.random() * 0.02,
+        size: 3.5 + Math.random() * 4,
+        color: colors[Math.floor(Math.random() * colors.length)]
+      });
+    }
+
+    if (!isAnimationRunning) {
+      isAnimationRunning = true;
+      requestAnimationFrame(renderParticlesLoop);
+    }
   }
 
   // --- BUTTON LISTENERS ---
-  btnBet.addEventListener('click', () => {
-    sound.playClick();
-    if (isPlaying) {
-      if (revealed > 0) {
-        // Cash out
-        endRound(true);
+  if (btnBet) {
+    btnBet.addEventListener('click', () => {
+      sound.playClick();
+      if (isPlaying) {
+        if (revealed > 0) {
+          endRound(true);
+        } else {
+          alert('Reveal at least one tile to Cash Out');
+        }
       } else {
-        alert('Reveal at least one tile to Cash Out');
+        initBoard();
+        startRound();
       }
-    } else {
-      // Reset board & start round
-      initBoard();
-      startRound();
-    }
-  });
-
-  btnRandom.addEventListener('click', () => {
-    sound.playClick();
-    const hiddenIndices = [];
-    tileStates.forEach((state, idx) => {
-      if (state === 'hidden') hiddenIndices.push(idx);
     });
-    
-    if (hiddenIndices.length > 0) {
-      const randIdx = hiddenIndices[Math.floor(Math.random() * hiddenIndices.length)];
-      const tileEl = board.children[randIdx];
-      handleTileClick(randIdx, tileEl);
-    }
+  }
+
+  if (btnRandom) {
+    btnRandom.addEventListener('click', () => {
+      sound.playClick();
+      const hiddenIndices = [];
+      tileStates.forEach((state, idx) => {
+        if (state === 'hidden') hiddenIndices.push(idx);
+      });
+      
+      if (hiddenIndices.length > 0) {
+        const randIdx = hiddenIndices[Math.floor(Math.random() * hiddenIndices.length)];
+        const tileEl = board ? board.children[randIdx] : null;
+        if (tileEl) handleTileClick(randIdx, tileEl);
+      }
+    });
+  }
+
+  if (btnHalf) {
+    btnHalf.addEventListener('click', () => {
+      sound.playClick();
+      let currentVal = parseFloat(betInput.value);
+      if (!isNaN(currentVal)) {
+        betInput.value = Math.max(0.01, parseFloat((currentVal / 2).toFixed(2)));
+      }
+    });
+  }
+
+  if (btnDouble) {
+    btnDouble.addEventListener('click', () => {
+      sound.playClick();
+      let currentVal = parseFloat(betInput.value);
+      if (!isNaN(currentVal)) {
+        betInput.value = parseFloat((currentVal * 2).toFixed(2));
+      }
+    });
+  }
+
+  // Preset Amount Buttons (10, 50, 100, 500)
+  document.querySelectorAll('.preset-btn[data-val]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      sound.playClick();
+      const val = parseFloat(btn.dataset.val);
+      if (!isNaN(val) && betInput) {
+        betInput.value = val.toFixed(2);
+      }
+    });
   });
 
-  btnHalf.addEventListener('click', () => {
-    sound.playClick();
-    let currentVal = parseFloat(betInput.value);
-    if (!isNaN(currentVal)) {
-      betInput.value = Math.max(0.01, parseFloat((currentVal / 2).toFixed(2)));
-    }
-  });
+  // Swap Button
+  const btnSwap = document.getElementById('btnSwap');
+  if (btnSwap) {
+    btnSwap.addEventListener('click', () => {
+      sound.playClick();
+      let currentVal = parseFloat(betInput.value);
+      if (!isNaN(currentVal) && currentVal > 0 && betInput) {
+        betInput.value = (1000 / currentVal).toFixed(2);
+      }
+    });
+  }
 
-  btnDouble.addEventListener('click', () => {
-    sound.playClick();
-    let currentVal = parseFloat(betInput.value);
-    if (!isNaN(currentVal)) {
-      betInput.value = parseFloat((currentVal * 2).toFixed(2));
-    }
-  });
+  // Mines Slider Listener
+  if (minesSelect) {
+    minesSelect.addEventListener('input', () => {
+      const val = parseInt(minesSelect.value);
+      if (minesValMin) minesValMin.textContent = val;
+      updateMultipliersRoad();
+    });
+  }
 
-  minesSelect.addEventListener('input', () => {
-    const val = parseInt(minesSelect.value);
-    minesDisplay.textContent = `${val} ${val === 1 ? 'Mine' : 'Mines'}`;
-    updateMultipliersRoad();
-  });
+  if (btnMute) {
+    btnMute.addEventListener('click', () => {
+      const muted = sound.toggleMute();
+      if (speakerIcon) {
+        if (muted) {
+          speakerIcon.innerHTML = `
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M6.717 3.55A.5.5 0 0 1 7 4v8a.5.5 0 0 1-.812.39L3.825 10.5H1.5A.5.5 0 0 1 1 10V6a.5.5 0 0 1 .5-.5h2.325l2.363-1.89a.5.5 0 0 1 .529-.06zM6 5.04L4.312 6.39A.5.5 0 0 1 4 6.5H2v3h2a.5.5 0 0 1 .312.11L6 10.96V5.04zm7.854.146a.5.5 0 0 0-.708-.708L11.5 6.086 9.854 4.438a.5.5 0 0 0-.708.708L10.793 6.793 9.146 8.44a.5.5 0 0 0 .708.708L11.5 7.502l1.646 1.646a.5.5 0 0 0 .708-.708L12.207 6.793 13.854 5.146z"/>
+            </svg>
+          `;
+        } else {
+          speakerIcon.innerHTML = `
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M11.536 14.01A8.47 8.47 0 0 0 14.02 10a8.47 8.47 0 0 0-2.484-4.01L10.5 7.028A6.5 6.5 0 0 1 12 10a6.5 6.5 0 0 1-1.5 2.972l1.036 1.038z"/>
+              <path d="M9.774 11.225A1 1 0 0 1 10 10a1 1 0 0 1-.226-.775l1.03-1.03A2.5 2.5 0 0 1 12 10a2.5 2.5 0 0 1-.422 1.455l-1.03-1.03z"/>
+              <path d="M10.025 8a1 1 0 0 1-1 1v2a1 1 0 0 1 1 h.586l3.293 3.293c.63.63 1.707.184 1.707-.707V3.414c0-.89-1.077-1.337-1.707-.707L10.61 6H10.025z"/>
+            </svg>
+          `;
+        }
+      }
+    });
+  }
 
-  btnMute.addEventListener('click', () => {
-    const muted = sound.toggleMute();
-    if (muted) {
-      speakerIcon.innerHTML = `
-        <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-          <path d="M6.717 3.55A.5.5 0 0 1 7 4v8a.5.5 0 0 1-.812.39L3.825 10.5H1.5A.5.5 0 0 1 1 10V6a.5.5 0 0 1 .5-.5h2.325l2.363-1.89a.5.5 0 0 1 .529-.06zM6 5.04L4.312 6.39A.5.5 0 0 1 4 6.5H2v3h2a.5.5 0 0 1 .312.11L6 10.96V5.04zm7.854.146a.5.5 0 0 0-.708-.708L11.5 6.086 9.854 4.438a.5.5 0 0 0-.708.708L10.793 6.793 9.146 8.44a.5.5 0 0 0 .708.708L11.5 7.502l1.646 1.646a.5.5 0 0 0 .708-.708L12.207 6.793 13.854 5.146z"/>
-        </svg>
-      `;
-    } else {
-      speakerIcon.innerHTML = `
-        <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-          <path d="M11.536 14.01A8.47 8.47 0 0 0 14.02 10a8.47 8.47 0 0 0-2.484-4.01L10.5 7.028A6.5 6.5 0 0 1 12 10a6.5 6.5 0 0 1-1.5 2.972l1.036 1.038z"/>
-          <path d="M9.774 11.225A1 1 0 0 1 10 10a1 1 0 0 1-.226-.775l1.03-1.03A2.5 2.5 0 0 1 12 10a2.5 2.5 0 0 1-.422 1.455l-1.03-1.03z"/>
-          <path d="M10.025 8a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h.586l3.293 3.293c.63.63 1.707.184 1.707-.707V3.414c0-.89-1.077-1.337-1.707-.707L10.61 6H10.025z"/>
-        </svg>
-      `;
-    }
-  });
+  if (btnBack) {
+    btnBack.addEventListener('click', () => {
+      sound.playClick();
+      sendToFlutter('exitGame');
+    });
+  }
 
-  btnBack.addEventListener('click', () => {
-    sound.playClick();
-    sendToFlutter('exitGame');
-  });
+  const btnPlus = document.querySelector('.bcg-plus-btn');
+  if (btnPlus) {
+    btnPlus.addEventListener('click', () => {
+      sound.playClick();
+      sendToFlutter('openDeposit');
+    });
+  }
 
-  // Tab mode toggle (Manual/Auto visual)
-  document.getElementById('tabManual').addEventListener('click', (e) => {
-    sound.playClick();
-    document.getElementById('tabManual').classList.add('active');
-    document.getElementById('tabAuto').classList.remove('active');
-  });
+  // Tab Mode Toggle (Manual / Auto)
+  const tabManual = document.getElementById('tabManual');
+  const tabAuto = document.getElementById('tabAuto');
+  const autoBetsGroup = document.getElementById('autoBetsGroup');
+  
+  if (tabManual) {
+    tabManual.addEventListener('click', (e) => {
+      sound.playClick();
+      tabManual.classList.add('active');
+      if (tabAuto) tabAuto.classList.remove('active');
+      if (autoBetsGroup) autoBetsGroup.style.display = 'none';
+    });
+  }
 
-  document.getElementById('tabAuto').addEventListener('click', (e) => {
-    sound.playClick();
-    document.getElementById('tabManual').classList.remove('active');
-    document.getElementById('tabAuto').classList.add('active');
+  if (tabAuto) {
+    tabAuto.addEventListener('click', (e) => {
+      sound.playClick();
+      if (tabManual) tabManual.classList.remove('active');
+      tabAuto.classList.add('active');
+      if (autoBetsGroup) autoBetsGroup.style.display = 'flex';
+    });
+  }
+
+  // Auto Bets Preset Handlers (∞, 10, 100)
+  const autoBetsInput = document.getElementById('autoBetsInput');
+  document.querySelectorAll('.auto-preset').forEach(btn => {
+    btn.addEventListener('click', () => {
+      sound.playClick();
+      const bets = btn.dataset.bets;
+      if (autoBetsInput) {
+        autoBetsInput.value = bets === 'inf' ? '∞' : bets;
+      }
+    });
   });
 
   // --- INITIALIZATION ---

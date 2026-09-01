@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
+import '../screens/deposit_screen.dart';
 
 // ─── Mines Mobile Webview Loader ──────────────────────────────────────────────
 Widget buildMinesWebView(
@@ -47,6 +48,16 @@ class _MobileMinesWebViewState extends State<_MobileMinesWebView> {
             } else if (data['type'] == 'updateBalance') {
               final double? newBal = double.tryParse(data['balance'].toString());
               if (newBal != null) widget.onBalanceUpdated(newBal);
+            } else if (data['type'] == 'openDeposit') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => DepositScreen(
+                    currentBalance: widget.currentBalance,
+                    onBalanceUpdated: widget.onBalanceUpdated,
+                  ),
+                ),
+              );
             }
           } catch (_) {
             final double? newBal = double.tryParse(message.message);

@@ -6,15 +6,15 @@
   <title>Mines Pro - BC.Game</title>
   <!-- Google Fonts: Inter -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
 
 <div id="game-container">
-  <!-- Particles Canvas Overlay -->
-  <div id="particles-container"></div>
+  <!-- Hardware Accelerated 60Hz/120Hz Particle Canvas -->
+  <canvas id="particlesCanvas"></canvas>
 
-  <!-- HEADER: BC.Game Style (matches home screen) -->
+  <!-- HEADER: Clean Style (exact match with home screen balance) -->
   <header class="bcg-header">
     <!-- Left: Back Button -->
     <button class="bcg-back-btn" id="btnBack" title="Exit Game">
@@ -23,33 +23,15 @@
       </svg>
     </button>
 
-    <!-- Center: BC.Game Logo -->
-    <div class="bcg-logo">
-      <svg width="22" height="22" viewBox="0 0 100 100" fill="none">
-        <circle cx="50" cy="50" r="50" fill="#2CD97E"/>
-        <text x="50" y="67" text-anchor="middle" font-family="Inter,sans-serif" font-weight="900" font-size="52" fill="#0d1117">B</text>
-      </svg>
-      <span class="bcg-logo-text">BC.Game</span>
-    </div>
-
-    <!-- Right: Balance Pill + Deposit -->
+    <!-- Balance Pill (1-to-1 Match with Home Screen) -->
     <div class="bcg-balance-pill">
-      <!-- Rupee Coin Icon -->
-      <div class="bcg-coin">₹</div>
+      <!-- Rupee Coin Asset -->
+      <img src="rupee.png" class="bcg-rupee-img" alt="Rupee">
       <!-- Balance Text -->
       <span class="bcg-balance-val" id="headerBalance">150.57</span>
       <!-- Deposit (+) Button -->
       <button class="bcg-plus-btn" title="Deposit">+</button>
     </div>
-
-    <!-- Extra Right: Mute -->
-    <button class="bcg-icon-btn" id="btnMute" title="Toggle Sound">
-      <svg width="16" height="16" fill="currentColor" id="speakerIcon" viewBox="0 0 16 16">
-        <path d="M11.536 14.01A8.47 8.47 0 0 0 14.02 10a8.47 8.47 0 0 0-2.484-4.01L10.5 7.028A6.5 6.5 0 0 1 12 10a6.5 6.5 0 0 1-1.5 2.972l1.036 1.038z"/>
-        <path d="M9.774 11.225A1 1 0 0 1 10 10a1 1 0 0 1-.226-.775l1.03-1.03A2.5 2.5 0 0 1 12 10a2.5 2.5 0 0 1-.422 1.455l-1.03-1.03z"/>
-        <path d="M6.717 3.55A.5.5 0 0 1 7 4v8a.5.5 0 0 1-.812.39L3.825 10.5H1.5A.5.5 0 0 1 1 10V6a.5.5 0 0 1 .5-.5h2.325l2.363-1.89a.5.5 0 0 1 .529-.06z"/>
-      </svg>
-    </button>
   </header>
 
   <!-- MULTIPLIERS ROAD -->
@@ -61,72 +43,102 @@
 
   <!-- BOARD -->
   <section class="boardWrap">
+    <img src="top_skull.png" class="board-top-skull" alt="Skull Decor">
     <div class="board" id="board">
-      <!-- Generated dynamically -->
+      <button class="tile" data-index="0"></button>
+      <button class="tile" data-index="1"></button>
+      <button class="tile" data-index="2"></button>
+      <button class="tile" data-index="3"></button>
+      <button class="tile" data-index="4"></button>
+      <button class="tile" data-index="5"></button>
+      <button class="tile" data-index="6"></button>
+      <button class="tile" data-index="7"></button>
+      <button class="tile" data-index="8"></button>
+      <button class="tile" data-index="9"></button>
+      <button class="tile" data-index="10"></button>
+      <button class="tile" data-index="11"></button>
+      <button class="tile" data-index="12"></button>
+      <button class="tile" data-index="13"></button>
+      <button class="tile" data-index="14"></button>
+      <button class="tile" data-index="15"></button>
+      <button class="tile" data-index="16"></button>
+      <button class="tile" data-index="17"></button>
+      <button class="tile" data-index="18"></button>
+      <button class="tile" data-index="19"></button>
+      <button class="tile" data-index="20"></button>
+      <button class="tile" data-index="21"></button>
+      <button class="tile" data-index="22"></button>
+      <button class="tile" data-index="23"></button>
+      <button class="tile" data-index="24"></button>
     </div>
   </section>
 
   <!-- CONTROLS PANEL -->
   <section class="controls-panel">
-    <!-- Manual/Auto tabs -->
+    <!-- Manual / Auto Tabs -->
     <div class="tabs-bar">
       <button class="tab-btn active" id="tabManual">Manual</button>
       <button class="tab-btn" id="tabAuto">Auto</button>
     </div>
 
-    <!-- Bet Amount -->
+    <!-- Bet Amount Section -->
     <div class="field-group">
       <div class="field-header">
-        <span>Bet Amount</span>
-        <span style="color: var(--color-green);">Min: ₹0.01</span>
+        <span class="field-title">Amount <span class="info-icon" title="Minimum bet amount: ₹0.01">ⓘ</span></span>
       </div>
       <div class="field-input-row">
         <div class="amount-input-container">
-          <span class="currency-symbol">₹</span>
+          <img src="rupee.png" class="input-rupee-img" alt="Rupee">
           <input class="amount-input" type="number" id="betInput" value="10.00" step="1" min="0.01">
         </div>
-        <button class="adjust-btn" id="btnHalf">½</button>
+        <button class="adjust-btn" id="btnHalf">1/2</button>
         <button class="adjust-btn" id="btnDouble">2×</button>
+        <button class="adjust-btn icon-swap-btn" id="btnSwap" title="Swap">⇅</button>
+      </div>
+      <!-- Quick Amount Presets -->
+      <div class="presets-row">
+        <button class="preset-btn" data-val="10">10</button>
+        <button class="preset-btn" data-val="50">50</button>
+        <button class="preset-btn" data-val="100">100</button>
+        <button class="preset-btn" data-val="500">500</button>
       </div>
     </div>
 
-    <!-- Mines Select -->
+    <!-- Mines Select Section -->
     <div class="field-group">
       <div class="field-header">
-        <span>Mines Count</span>
-        <span id="minesDisplay">3 Mines</span>
+        <span class="field-title">Mines</span>
       </div>
       <div class="slider-container">
-        <span>1</span>
+        <span id="minesValMin" class="slider-val">3</span>
         <input type="range" id="minesSelect" min="1" max="24" value="3">
-        <span>24</span>
+        <span class="slider-val">24</span>
       </div>
     </div>
 
-    <!-- Action Buttons -->
-    <div class="action-row">
-      <button class="btn-main btn-secondary" id="btnRandom">Random Pick</button>
-      <button class="btn-main btn-bet" id="btnBet">Start Bet</button>
+    <!-- Auto Mode: Number of Bets -->
+    <div class="field-group auto-only" id="autoBetsGroup" style="display: none;">
+      <div class="field-header">
+        <span class="field-title">Number of Bets</span>
+      </div>
+      <div class="field-input-row">
+        <div class="amount-input-container">
+          <input class="amount-input" type="text" id="autoBetsInput" value="∞" readonly>
+        </div>
+        <button class="adjust-btn auto-preset" data-bets="inf">∞</button>
+        <button class="adjust-btn auto-preset" data-bets="10">10</button>
+        <button class="adjust-btn auto-preset" data-bets="100">100</button>
+      </div>
+    </div>
+
+    <!-- Action Buttons Stack -->
+    <div class="action-stack">
+      <button class="btn-main btn-bet" id="btnBet">Bet</button>
+      <button class="btn-main btn-secondary" id="btnRandom" style="display: none;">Pick a Tile Randomly</button>
     </div>
 
     <!-- Status Text -->
-    <div class="status-text" id="statusText">Set bet amount and click Start Bet</div>
-
-    <!-- Session Stats -->
-    <div class="stats-row">
-      <div class="stat-item">
-        <span class="stat-label">Profit</span>
-        <span class="stat-value" id="statProfit">₹0.00</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-label">Wins</span>
-        <span class="stat-value win" id="statWins">0</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-label">Losses</span>
-        <span class="stat-value" id="statLosses" style="color: var(--color-red);">0</span>
-      </div>
-    </div>
+    <div class="status-text" id="statusText">Set bet amount and click Bet</div>
   </section>
 </div>
 

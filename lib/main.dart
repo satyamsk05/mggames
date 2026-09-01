@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'screens/deposit_screen.dart';
+import 'screens/withdraw_screen.dart';
 import 'webview_helper/webview_helper_stub.dart'
     if (dart.library.html) 'webview_helper/webview_helper_web.dart'
     if (dart.library.io) 'webview_helper/webview_helper_mobile.dart';
@@ -21,9 +23,12 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFFF2F4F7),
         useMaterial3: true,
       ),
-      home: const VirtualMobileFrame(
-        child: BcGameDashboard(),
-      ),
+      builder: (context, child) {
+        return VirtualMobileFrame(
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
+      home: const BcGameDashboard(),
     );
   }
 }
@@ -37,123 +42,38 @@ class VirtualMobileFrame extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        if (constraints.maxWidth > 500) {
+        // If viewing on desktop web (>600px), preview in 1080x2400 aspect ratio mobile frame
+        if (constraints.maxWidth > 600) {
+          final double availableHeight = (constraints.maxHeight - 32.0).clamp(500.0, 960.0);
+          final double targetWidth = (availableHeight * (1080.0 / 2400.0)).clamp(360.0, 432.0);
+
           return Scaffold(
-            backgroundColor: const Color(0xFF191A1E), // Sleek dark canvas background
+            backgroundColor: const Color(0xFF141518),
             body: Center(
               child: Container(
-                width: 360,
-                height: 804,
-                margin: const EdgeInsets.symmetric(vertical: 24.0),
+                width: targetWidth,
+                height: availableHeight,
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(44.0),
-                  border: Border.all(
-                    color: const Color(0xFF2C2F36),
-                    width: 12.0,
-                  ),
+                  color: const Color(0xFFF2F4F7),
+                  borderRadius: BorderRadius.circular(20.0),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.4),
-                      blurRadius: 40,
+                      color: Colors.black.withValues(alpha: 0.5),
+                      blurRadius: 30,
                       spreadRadius: 2,
-                      offset: const Offset(0, 20),
+                      offset: const Offset(0, 10),
                     ),
                   ],
                 ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(32.0),
-                  child: Stack(
-                    children: [
-                      // Main Screen content with custom padding injected
-                      Positioned.fill(
-                        child: MediaQuery(
-                          data: MediaQuery.of(context).copyWith(
-                            padding: const EdgeInsets.only(top: 36.0, bottom: 24.0),
-                          ),
-                          child: child,
-                        ),
-                      ),
-                      
-                      // Top Bar/Status Area
-                      Positioned(
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        child: Container(
-                          height: 36,
-                          padding: const EdgeInsets.only(left: 24.0, right: 24.0, top: 8.0),
-                          color: const Color(0xFFF2F4F7), // Match scaffoldBackgroundColor
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                '9:41',
-                                style: GoogleFonts.sourceSans3(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black,
-                                ),
-                              ),
-                              const Row(
-                                children: [
-                                  Icon(Icons.signal_cellular_4_bar, size: 13, color: Colors.black),
-                                  SizedBox(width: 4),
-                                  Icon(Icons.wifi, size: 13, color: Colors.black),
-                                  SizedBox(width: 4),
-                                  Icon(Icons.battery_full, size: 13, color: Colors.black),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      
-                      // Top Notch (Speaker/Camera notch)
-                      Positioned(
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        child: Align(
-                          alignment: Alignment.topCenter,
-                          child: Container(
-                            width: 130,
-                            height: 20,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFF2C2F36),
-                              borderRadius: BorderRadius.only(
-                                bottomLeft: Radius.circular(14),
-                                bottomRight: Radius.circular(14),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      
-                      // Bottom Home Indicator
-                      Positioned(
-                        bottom: 6,
-                        left: 0,
-                        right: 0,
-                        child: Align(
-                          alignment: Alignment.bottomCenter,
-                          child: Container(
-                            width: 120,
-                            height: 4,
-                            decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.3),
-                              borderRadius: BorderRadius.circular(2.0),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                  borderRadius: BorderRadius.circular(20.0),
+                  child: child,
                 ),
               ),
             ),
           );
         }
+        // On actual mobile screens, render 100% full screen
         return child;
       },
     );
@@ -226,7 +146,6 @@ class _BcGameDashboardState extends State<BcGameDashboard> {
     'assets/images/PLINKO.png',
     'assets/images/KENO.png',
     'assets/images/HILO.png',
-    'assets/images/COINFLIP.png',
     'assets/images/DIAMONDS.png',
     'assets/images/BLACKJACK.png',
     'assets/images/ROULETTE.png',
@@ -290,6 +209,7 @@ class _BcGameDashboardState extends State<BcGameDashboard> {
     final filename = path.split('/').last.replaceAll('.png', '');
     if (filename == 'CRASH_OLD') return 'CRASH';
     if (filename == 'FAST_PARITY') return 'AVIATOR';
+    if (filename.toLowerCase().contains('mine')) return 'MINES';
     return filename.replaceAll('_', ' ').toUpperCase();
   }
 
@@ -358,19 +278,13 @@ class _BcGameDashboardState extends State<BcGameDashboard> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'TOTAL BALANCE',
-                      style: GoogleFonts.sourceSans3(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF8A8F95),
-                      ),
-                    ),
-                    const Icon(Icons.security, color: Color(0xFF2CD97E), size: 18),
-                  ],
+                Text(
+                  'TOTAL BALANCE',
+                  style: GoogleFonts.sourceSans3(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF8A8F95),
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -389,7 +303,19 @@ class _BcGameDashboardState extends State<BcGameDashboard> {
                       child: SizedBox(
                         height: 40,
                         child: ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => DepositScreen(
+                                  currentBalance: _balance,
+                                  onBalanceUpdated: (newBal) {
+                                    setState(() => _balance = newBal);
+                                  },
+                                ),
+                              ),
+                            );
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF2CD97E),
                             foregroundColor: Colors.black,
@@ -417,7 +343,14 @@ class _BcGameDashboardState extends State<BcGameDashboard> {
                           onPressed: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => const WithdrawScreen()),
+                              MaterialPageRoute(
+                                builder: (context) => WithdrawScreen(
+                                  currentBalance: _balance,
+                                  onBalanceUpdated: (newBal) {
+                                    setState(() => _balance = newBal);
+                                  },
+                                ),
+                              ),
                             );
                           },
                           style: OutlinedButton.styleFrom(
@@ -1057,6 +990,11 @@ class _BcGameDashboardState extends State<BcGameDashboard> {
   Widget _buildHeader() {
     return BcGameHeader(
       balance: _balance,
+      onBalanceUpdated: (newBal) {
+        setState(() {
+          _balance = newBal;
+        });
+      },
     );
   }
 
@@ -1997,7 +1935,7 @@ class _MinesGameScreenState extends State<MinesGameScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F4F7),
+      backgroundColor: const Color(0xFF1A1C20),
       body: SafeArea(
         child: buildMinesWebView(
           context,
@@ -2030,7 +1968,7 @@ class _CrashGameScreenState extends State<CrashGameScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F4F7),
+      backgroundColor: const Color(0xFF1A1C20),
       body: SafeArea(
         child: buildCrashWebView(
           context,
@@ -2063,7 +2001,7 @@ class _AviatorGameScreenState extends State<AviatorGameScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F4F7),
+      backgroundColor: const Color(0xFF1A1C20),
       body: SafeArea(
         child: buildAviatorWebView(
           context,
@@ -2076,482 +2014,8 @@ class _AviatorGameScreenState extends State<AviatorGameScreen> {
 }
 
 // ----------------------------------------------------
-// New Screens for Withdrawal and Bet History
+// New Screens for Bet History
 // ----------------------------------------------------
-
-class WithdrawScreen extends StatefulWidget {
-  const WithdrawScreen({super.key});
-
-  @override
-  State<WithdrawScreen> createState() => _WithdrawScreenState();
-}
-
-class _WithdrawScreenState extends State<WithdrawScreen> {
-  int _selectedMethodIndex = 2; // UPI is selected by default in screenshot (index 2)
-  final TextEditingController _upiIdController = TextEditingController(text: '7088800480-6.wallet@phonepe');
-  final TextEditingController _nameController = TextEditingController(text: 'Satyam kumar');
-  final TextEditingController _accountController = TextEditingController();
-  final TextEditingController _ifscController = TextEditingController();
-  final TextEditingController _amountController = TextEditingController(text: '0');
-
-  final double _balance = 150.57;
-
-  final List<Map<String, dynamic>> _methods = [
-    {
-      'name': 'Bank Transfer',
-      'sub': 'ETA: 30 min',
-      'logo': Icons.account_balance,
-      'isBank': true,
-    },
-    {
-      'name': 'BANK TRAN...',
-      'sub': 'ETA: 30 min',
-      'logo': Icons.account_balance,
-      'isBank': true,
-    },
-    {
-      'name': 'UPI',
-      'sub': 'ETA: 30 min',
-      'logo': Icons.payments,
-      'isBank': false,
-    },
-    {
-      'name': 'iCash.one',
-      'sub': 'ETA: 1 min',
-      'logo': Icons.wallet,
-      'isBank': false,
-    },
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    final selectedMethod = _methods[_selectedMethodIndex];
-    final bool isUpi = selectedMethod['name'] == 'UPI';
-    final bool isBank = selectedMethod['isBank'] == true;
-
-    return VirtualMobileFrame(
-      child: Scaffold(
-        backgroundColor: const Color(0xFFF2F4F7),
-        body: SafeArea(
-          child: Column(
-            children: [
-              // Home-screen style header: balance pill + back button
-              BcGameHeader(
-                balance: _balance,
-                isDark: false,
-                hasBackButton: true,
-                onBackTap: () => Navigator.pop(context),
-              ),
-              // Scrollable body
-              Expanded(
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.all(16.0),
-                  child: Container(
-                    padding: const EdgeInsets.all(16.0),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFE5E9EC), width: 1.5),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                // 1. Currency
-                Text(
-                  'Currency',
-                  style: GoogleFonts.sourceSans3(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF8A8F95),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  height: 48,
-                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const Color(0xFFE5E9EC), width: 1.5),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 20,
-                        height: 20,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFE05C1F),
-                          shape: BoxShape.circle,
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          '₹',
-                          style: GoogleFonts.sourceSans3(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'INR',
-                        style: GoogleFonts.sourceSans3(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                      ),
-                      const Spacer(),
-                      const Icon(Icons.arrow_drop_down, color: Colors.black),
-                    ],
-                  ),
-                ),
-                
-                const SizedBox(height: 20),
-                // 2. Withdraw Method
-                Text(
-                  'Withdraw Method',
-                  style: GoogleFonts.sourceSans3(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF8A8F95),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                
-                // Wrap Grid
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: List.generate(_methods.length, (index) {
-                    final method = _methods[index];
-                    final isSelected = _selectedMethodIndex == index;
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _selectedMethodIndex = index;
-                        });
-                      },
-                      child: Container(
-                        width: (MediaQuery.of(context).size.width > 500 ? 328 - 32 - 20 : MediaQuery.of(context).size.width - 64 - 20) / 3,
-                        padding: const EdgeInsets.all(8.0),
-                        decoration: BoxDecoration(
-                          color: isSelected ? const Color(0xFFE8F9F0) : const Color(0xFFF2F4F7),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: isSelected ? const Color(0xFF2CD97E) : const Color(0xFFE5E9EC),
-                            width: 1.5,
-                          ),
-                        ),
-                        child: Stack(
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Logo icon box
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(4),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withValues(alpha: 0.02),
-                                        blurRadius: 2,
-                                      ),
-                                    ],
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(method['logo'], size: 12, color: Colors.black),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        method['name'] == 'UPI' ? 'UPI' : (method['name'] == 'iCash.one' ? 'ic' : 'BANK'),
-                                        style: GoogleFonts.sourceSans3(
-                                          fontSize: 9,
-                                          fontWeight: FontWeight.w900,
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  method['name'],
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: GoogleFonts.sourceSans3(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  method['sub'],
-                                  style: GoogleFonts.sourceSans3(
-                                    fontSize: 9,
-                                    color: const Color(0xFF8A8F95),
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            if (isSelected)
-                              Positioned(
-                                right: 0,
-                                top: 0,
-                                child: Container(
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFF2CD97E),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  padding: const EdgeInsets.all(2),
-                                  child: const Icon(Icons.check, size: 8, color: Colors.black),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }),
-                ),
-
-                const SizedBox(height: 20),
-                
-                // 3. Form fields dynamically based on selection
-                if (isUpi) ...[
-                  _buildLabel('UPI ID *'),
-                  _buildInput(_upiIdController, 'Enter UPI ID'),
-                  const SizedBox(height: 16),
-                  _buildLabel('Account Holder Name *'),
-                  _buildInput(_nameController, 'Enter name'),
-                ] else if (isBank) ...[
-                  _buildLabel('Account Holder Name *'),
-                  _buildInput(_nameController, 'Enter name'),
-                  const SizedBox(height: 16),
-                  _buildLabel('Account *'),
-                  _buildInput(_accountController, 'Enter Account Number'),
-                  const SizedBox(height: 16),
-                  _buildLabel('IFSC Code *'),
-                  _buildInput(_ifscController, 'Enter IFSC Code'),
-                ] else ...[
-                  // iCash.one or other
-                  _buildLabel('Account ID *'),
-                  _buildInput(_accountController, 'Enter account ID'),
-                ],
-
-                const SizedBox(height: 20),
-                
-                // 4. Withdraw Amount
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Withdraw Amount',
-                      style: GoogleFonts.sourceSans3(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF8A8F95),
-                      ),
-                    ),
-                    Text(
-                      'Min: ₹420.00',
-                      style: GoogleFonts.sourceSans3(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFFFF4D4D),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                _buildInput(_amountController, '0', keyboardType: TextInputType.number),
-                
-                const SizedBox(height: 12),
-                
-                // Min, 25%, 50%, Max buttons row
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _buildPercentButton('Min', () {
-                      _amountController.text = '420.00';
-                    }),
-                    _buildPercentButton('25%', () {
-                      _amountController.text = (_balance * 0.25).toStringAsFixed(2);
-                    }),
-                    _buildPercentButton('50%', () {
-                      _amountController.text = (_balance * 0.50).toStringAsFixed(2);
-                    }),
-                    _buildPercentButton('Max', () {
-                      _amountController.text = _balance.toStringAsFixed(2);
-                    }),
-                  ],
-                ),
-                
-                const SizedBox(height: 16),
-                
-                // Available Balance
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: Text(
-                    'Available: ₹${_balance.toStringAsFixed(2)}',
-                    style: GoogleFonts.sourceSans3(
-                      fontSize: 12,
-                      color: const Color(0xFF595F67),
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-                
-                const SizedBox(height: 24),
-                
-                // 5. Withdraw Submit button
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: _handleSubmit,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2CD97E).withValues(alpha: 0.5), // Match screenshot light green
-                      foregroundColor: Colors.black,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: Text(
-                      'Withdraw',
-                      style: GoogleFonts.sourceSans3(
-                        fontWeight: FontWeight.w900,
-                        fontSize: 16,
-                        color: Colors.black.withValues(alpha: 0.6),
-                      ),
-                    ),
-                  ),
-                ),
-              ],       // Column children (inside Container)
-            ),         // Column
-          ),           // Container
-        ),             // SingleChildScrollView
-      ),               // Expanded
-    ],                 // outer Column children
-  ),                   // outer Column
-),                     // SafeArea
-      ),               // Scaffold
-    );                 // VirtualMobileFrame return
-  }
-
-  Widget _buildLabel(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Text(
-        text,
-        style: GoogleFonts.sourceSans3(
-          fontSize: 12,
-          fontWeight: FontWeight.w700,
-          color: const Color(0xFF8A8F95),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInput(TextEditingController controller, String hint, {TextInputType keyboardType = TextInputType.text}) {
-    return Container(
-      height: 48,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFE5E9EC), width: 1.5),
-      ),
-      child: TextField(
-        controller: controller,
-        keyboardType: keyboardType,
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: GoogleFonts.sourceSans3(color: const Color(0xFF8A8F95), fontSize: 13),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          border: InputBorder.none,
-          isDense: true,
-        ),
-        style: GoogleFonts.sourceSans3(fontSize: 13, color: Colors.black, fontWeight: FontWeight.w600),
-      ),
-    );
-  }
-
-  Widget _buildPercentButton(String label, VoidCallback onTap) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        child: Text(
-          label,
-          style: GoogleFonts.sourceSans3(
-            fontSize: 12,
-            fontWeight: FontWeight.w900,
-            color: const Color(0xFF595F67),
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _handleSubmit() {
-    final double amount = double.tryParse(_amountController.text) ?? 0.0;
-    if (amount < 420.00) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Minimum withdrawal amount is ₹420.00'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-    if (amount > _balance) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Insufficient balance'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
-    // Success Modal
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Text(
-            'Request Submitted',
-            style: GoogleFonts.sourceSans3(fontWeight: FontWeight.w900),
-          ),
-          content: Text(
-            'Your withdrawal request of ₹$amount has been submitted successfully.\nETA: 30 minutes.',
-            style: GoogleFonts.sourceSans3(fontWeight: FontWeight.w600),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context); // Pop dialog
-                Navigator.pop(context); // Pop screen
-              },
-              child: Text(
-                'OK',
-                style: GoogleFonts.sourceSans3(color: const Color(0xFF2CD97E), fontWeight: FontWeight.w900),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-}
 
 class BetHistoryScreen extends StatefulWidget {
   const BetHistoryScreen({super.key});
@@ -2821,6 +2285,7 @@ class BcGameHeader extends StatelessWidget {
   final bool isDark;
   final bool hasBackButton;
   final VoidCallback? onBackTap;
+  final ValueChanged<double>? onBalanceUpdated;
 
   const BcGameHeader({
     super.key,
@@ -2828,6 +2293,7 @@ class BcGameHeader extends StatelessWidget {
     this.isDark = false,
     this.hasBackButton = false,
     this.onBackTap,
+    this.onBalanceUpdated,
   });
 
   @override
@@ -2863,13 +2329,13 @@ class BcGameHeader extends StatelessWidget {
           ],
           
           // Balance container
-          Container(
-            width: 181,
-            height: 38,
-            decoration: BoxDecoration(
-              color: cardColor,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: borderColor, width: 1.5),
+          Expanded(
+            child: Container(
+              height: 38,
+              decoration: BoxDecoration(
+                color: cardColor,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: borderColor, width: 1.5),
                 boxShadow: isDark
                     ? []
                     : [
@@ -2889,33 +2355,41 @@ class BcGameHeader extends StatelessWidget {
                     width: 20,
                     fit: BoxFit.contain,
                   ),
-                  const SizedBox(width: 5),
-                  Text(
-                    '₹ ${balance.toStringAsFixed(2)}',
-                    style: GoogleFonts.sourceSans3(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                      color: textColor,
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        balance.toStringAsFixed(2),
+                        style: GoogleFonts.sourceSans3(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          color: textColor,
+                        ),
+                      ),
                     ),
                   ),
-                  const Spacer(),
                   Bounceable(
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Plus button clicked'),
-                          duration: Duration(seconds: 1),
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DepositScreen(
+                            currentBalance: balance,
+                            onBalanceUpdated: onBalanceUpdated,
+                          ),
                         ),
                       );
                     },
                     child: Padding(
-                      padding: const EdgeInsets.only(right: 4.0, top: 3.0, bottom: 3.0),
+                      padding: const EdgeInsets.only(right: 2.0, top: 3.0, bottom: 3.0),
                       child: Container(
                         width: 30,
                         height: 30,
                         decoration: BoxDecoration(
                           color: const Color(0xFF2CD97E),
-                          borderRadius: BorderRadius.circular(6),
+                          borderRadius: BorderRadius.circular(4),
                         ),
                         child: const Icon(
                           Icons.add,
@@ -2928,7 +2402,8 @@ class BcGameHeader extends StatelessWidget {
                 ],
               ),
             ),
-          const Spacer(),
+          ),
+          const SizedBox(width: 6),
           
           // Gift button
           Bounceable(

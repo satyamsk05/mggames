@@ -4,6 +4,7 @@ import 'dart:ui_web' as ui_web;
 import 'dart:convert';
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../screens/deposit_screen.dart';
 
 // ─── Mines Webview Loader ──────────────────────────────────────────────────────
 Widget buildMinesWebView(
@@ -69,6 +70,16 @@ class _WebMinesWebViewState extends State<_WebMinesWebView> {
           widget.onBalanceUpdated(newBal);
         } else if (data['type'] == 'exitGame') {
           Navigator.of(context).pop();
+        } else if (data['type'] == 'openDeposit') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DepositScreen(
+                currentBalance: widget.currentBalance,
+                onBalanceUpdated: widget.onBalanceUpdated,
+              ),
+            ),
+          );
         }
       } catch (_) {}
     });
